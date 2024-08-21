@@ -71,6 +71,21 @@ services:
     networks:
       - caster
 
+  caster:
+    build:
+      context: .
+      dockerfile: ./caster/Dockerfile
+    depends_on:
+      - caster_kratos
+    ports:
+      - "8083:8083"
+    environment:
+      - GIN_MODE=release
+    # volumes:
+    #   - .:/app
+    networks:
+      - caster
+
 networks:
   caster:
     driver: bridge

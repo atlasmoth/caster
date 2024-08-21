@@ -24,5 +24,5 @@ func main() {
 	router := gin.Default()
 	k := kratos.NewMiddleware("http://caster_kratos:4433")
 	router.Use(k.Session())
-	router.Run()
+	router.Run(":8083")
 }
