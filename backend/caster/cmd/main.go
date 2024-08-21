@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// const serviceName = "caster"
+
 
 func main() {
 	neynarApiKey := os.Getenv("NEYNAR_API_KEY")
@@ -22,7 +22,7 @@ func main() {
 	ctrl := feed.New(billingGateway, authGateway, &neynarApiKey, neynarClient)
 	fmt.Println(ctrl)
 	router := gin.Default()
-	k := kratos.NewMiddleware("")
+	k := kratos.NewMiddleware("http://caster_kratos:4433")
 	router.Use(k.Session())
 	router.Run()
 }
