@@ -20,7 +20,7 @@ help:
 # Start all services
 .PHONY: up
 up:
-	$(DC) -f $(COMPOSE_FILE) up -d
+	$(DC) -f $(COMPOSE_FILE) up -d --build
 
 # Stop and remove all services
 .PHONY: down

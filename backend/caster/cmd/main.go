@@ -12,8 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 func main() {
 	neynarApiKey := os.Getenv("NEYNAR_API_KEY")
 	neynarClient := openapi.NewAPIClient(openapi.NewConfiguration())

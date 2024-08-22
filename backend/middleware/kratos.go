@@ -1,27 +1,27 @@
 package kratos
 
 import (
-	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ory/client-go"
+	oryClient "github.com/ory/client-go"
 )
 
 type kratosMiddleware struct {
-	ory *client.APIClient
+	ory *oryClient.APIClient
 }
 
 func NewMiddleware(url string) *kratosMiddleware {
-	cfg := client.NewConfiguration()
-	cfg.Servers = []client.ServerConfiguration{
+	cfg := oryClient.NewConfiguration()
+	cfg.Servers = []oryClient.ServerConfiguration{
 		{
 			URL: url,
 		},
 	}
 	return &kratosMiddleware{
-		ory: client.NewAPIClient(cfg),
+		ory: oryClient.NewAPIClient(cfg),
 	}
 }
 
@@ -41,18 +41,34 @@ func (k *kratosMiddleware) Session() gin.HandlerFunc {
 	}
 }
 
-func (k *kratosMiddleware) validateSession(r *http.Request) (*client.Session, error) {
-	cookie, err := r.Cookie("ory_session_playground")
+func (k *kratosMiddleware) validateSession(r *http.Request) (*oryClient.Session, error) {
+
+	sessionToken := r.Header.Get("Authorization")
+
+	if sessionToken == "" {
+		return nil, errors.New("no session token found")
+	}
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "http://caster_kratos:4433/sessions/whoami", nil)
+	req.Header.Set("Authorization", sessionToken)
+	req.Header.Set("Accept", "application/json")
+
 	if err != nil {
 		return nil, err
 	}
-	if cookie == nil {
-		return nil, errors.New("no session found in cookie")
+	res, err := client.Do(req)
+
+	if err != nil || res.StatusCode != http.StatusOK {
+		return nil, err
 	}
 
-	resp, _, err := k.ory.FrontendAPI.ToSession(context.Background()).Cookie(cookie.String()).Execute()
+	var sessionBody oryClient.Session
+
+	err = json.NewDecoder(res.Body).Decode(&sessionBody)
+
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
+
+	return &sessionBody, nil
 }
