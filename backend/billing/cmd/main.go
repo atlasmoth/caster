@@ -18,16 +18,13 @@ import (
 )
 
 type config struct {
-	
-	db   struct {
+	db struct {
 		dsn          string
 		maxOpenConns int
 		maxIdleConns int
 		maxIdleTime  string
 	}
-	
 }
-
 
 func main() {
 	var cfg config
@@ -41,16 +38,16 @@ func main() {
 	stripe.Key = stripeApiKey
 	stripeGatewayForController := stripeGateway.New()
 	models := data.NewModels(db)
-	ctrl := billing.New(stripeGatewayForController,models)
+	ctrl := billing.New(stripeGatewayForController, models)
 
 	router := gin.Default()
 	// k := kratos.NewMiddleware("http://caster_kratos:4433")
 	// router.Use(k.Session())
+	router.GET("/users/validate", ctrl.SubscriptionValidator)
 	router.POST("/users/subscription", ctrl.CreateSubscription)
 	router.POST("/stripe/webhook", ctrl.HandleStripeWebhook)
 	router.Run(":8084")
 }
-
 
 func openDB(cfg config) (*sql.DB, error) {
 

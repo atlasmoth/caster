@@ -42,8 +42,8 @@ func (g *Gateway) CreateSubscription(email string) (*stripe.Subscription, error)
 		PaymentSettings: &stripe.SubscriptionPaymentSettingsParams{
 			SaveDefaultPaymentMethod: stripe.String("on_subscription"),
 		},
-		Metadata:  map[string]string{
-			"user_id" : email,
+		Metadata: map[string]string{
+			"user_id": email,
 		},
 	}
 	params.AddExpand("latest_invoice.payment_intent")

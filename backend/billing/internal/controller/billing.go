@@ -2,9 +2,9 @@ package billing
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -22,22 +22,27 @@ type StripeGateway interface {
 
 type Controller struct {
 	stripeGateway StripeGateway
-	models data.Models
+	models        data.Models
 }
 
 func New(stripeGateway StripeGateway, models data.Models) *Controller {
 	return &Controller{stripeGateway, models}
 }
 
+type CreateSubscriptionBody struct {
+	Email string `json:"email" binding:"required"`
+}
+
 func (ctrl *Controller) CreateSubscription(c *gin.Context) {
 
-	subscription, err := ctrl.stripeGateway.CreateSubscription("ebuka422@gmail.com")
+	email, err := ctrl.validateKratosSession(c.Request)
 	if err != nil {
-		c.Status(http.StatusBadRequest)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
+		returnErrorResponse(c, err)
+		return
+	}
+	subscription, err := ctrl.stripeGateway.CreateSubscription(*email)
+	if err != nil {
+		returnErrorResponse(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -46,21 +51,46 @@ func (ctrl *Controller) CreateSubscription(c *gin.Context) {
 	})
 
 }
+func returnErrorResponse(c *gin.Context, err error) {
+	c.Status(http.StatusBadRequest)
+	c.JSON(http.StatusBadRequest, gin.H{
+		"success": false,
+		"message": err.Error(),
+	})
+
+}
+
+func (ctrl *Controller) SubscriptionValidator(c *gin.Context) {
+
+	email, err := ctrl.validateKratosSession(c.Request)
+	if err != nil {
+		returnErrorResponse(c, err)
+		return
+	}
+	user, err := ctrl.models.Users.GetSubscriptionByEmail(*email)
+	if err != nil {
+		returnErrorResponse(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    user,
+	})
+
+}
 
 func (ctrl *Controller) HandleStripeWebhook(c *gin.Context) {
 
 	b, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		log.Printf("ioutil.ReadAll: %v", err)
+		returnErrorResponse(c, err)
 		return
 	}
 
 	event, err := webhook.ConstructEvent(b, c.GetHeader("Stripe-Signature"), os.Getenv("STRIPE_WEBHOOK_SECRET"))
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		log.Printf("webhook.ConstructEvent: %v", err)
+		returnErrorResponse(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"received": true})
@@ -75,8 +105,7 @@ func (ctrl *Controller) HandleStripeWebhook(c *gin.Context) {
 				fmt.Printf("error parsing webhook JSON: %v", err)
 				return
 			}
-			ctrl.models.Users.Upsert(invoice.CustomerEmail,invoice.Subscription.ID,time.Unix(int64(invoice.Lines.Data[0].Period.End), 0).UTC())
-			
+			ctrl.models.Users.Upsert(invoice.CustomerEmail, invoice.Subscription.ID, time.Unix(int64(invoice.Lines.Data[0].Period.End), 0).UTC())
 
 			break
 		}
@@ -98,5 +127,46 @@ func (ctrl *Controller) HandleStripeWebhook(c *gin.Context) {
 
 	}
 
-	c.JSON(http.StatusOK, gin.H{"received": true})
+}
+
+type SessionResponse struct {
+	Identity struct {
+		Traits struct {
+			Email string `json:"email"`
+		} `json:"traits"`
+	} `json:"identity"`
+}
+
+func (ctrl *Controller) validateKratosSession(r *http.Request) (*string, error) {
+
+	sessionToken := r.Header.Get("Authorization")
+
+	if sessionToken == "" {
+		return nil, errors.New("no session token found")
+	}
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "http://localhost:4433/sessions/whoami", nil)
+	req.Header.Set("Authorization", sessionToken)
+	req.Header.Set("Accept", "application/json")
+
+	if err != nil {
+		return nil, err
+	}
+	res, err := client.Do(req)
+
+	if err != nil || res.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	var sessionBody SessionResponse
+
+	err = json.NewDecoder(res.Body).Decode(&sessionBody)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &sessionBody.Identity.Traits.Email, nil
 }
