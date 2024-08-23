@@ -21,6 +21,10 @@ func main() {
 	fmt.Println(ctrl)
 	router := gin.Default()
 	k := kratos.NewMiddleware("http://caster_kratos:4433")
-	router.Use(k.Session())
+	authorized := router.Group("/user")
+	authorized.Use(k.Session())
+	{
+
+	}
 	router.Run(":8083")
 }

@@ -1,2 +1,2 @@
-Format go giles:
+Format go files:
 gofmt -s -w .
