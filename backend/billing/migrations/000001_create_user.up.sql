@@ -1,0 +1,9 @@
+CREATE EXTENSION IF NOT EXISTS citext;
+
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    email CITEXT UNIQUE NOT NULL,
+    subscription_id TEXT,
+    subscription_expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);

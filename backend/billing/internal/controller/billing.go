@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/atlasmoth/caster/backend/billing/internal/data"
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v79"
 	"github.com/stripe/stripe-go/v79/webhook"
@@ -20,10 +22,11 @@ type StripeGateway interface {
 
 type Controller struct {
 	stripeGateway StripeGateway
+	models data.Models
 }
 
-func New(stripeGateway StripeGateway) *Controller {
-	return &Controller{stripeGateway}
+func New(stripeGateway StripeGateway, models data.Models) *Controller {
+	return &Controller{stripeGateway, models}
 }
 
 func (ctrl *Controller) CreateSubscription(c *gin.Context) {
@@ -72,8 +75,8 @@ func (ctrl *Controller) HandleStripeWebhook(c *gin.Context) {
 				fmt.Printf("error parsing webhook JSON: %v", err)
 				return
 			}
+			ctrl.models.Users.Upsert(invoice.CustomerEmail,invoice.Subscription.ID,time.Unix(int64(invoice.Lines.Data[0].Period.End), 0).UTC())
 			
-			fmt.Printf("Invoice ID: %v -- Invoice End date: %v -- Alternative %v -- Identifier: %v", invoice.Subscription.ID, invoice.Lines.Data[0].Period.End, invoice.PeriodEnd, invoice.CustomerEmail)
 
 			break
 		}
