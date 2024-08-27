@@ -33,6 +33,12 @@ serve:
     base_url: http://caster_kratos:4434/
 
 selfservice:
+  flows:
+    registration:
+      after:
+        oidc:
+          hooks:
+            - hook: session
   default_browser_return_url: http://127.0.0.1:4455/welcome
   methods:
     totp:
