@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	billing "github.com/atlasmoth/caster/backend/billing/internal/controller"
+	billing "github.com/atlasmoth/caster/backend/billing/internal/controller/billing"
 	"github.com/atlasmoth/caster/backend/billing/internal/data"
 	stripeGateway "github.com/atlasmoth/caster/backend/billing/internal/gateway/stripe/http"
 
