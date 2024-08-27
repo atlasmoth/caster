@@ -33,6 +33,8 @@ serve:
     base_url: http://caster_kratos:4434/
 
 selfservice:
+  allowed_return_urls:
+    - http://localhost:8081/Callback
   flows:
     registration:
       after:
@@ -40,17 +42,17 @@ selfservice:
           hooks:
             - hook: session
   default_browser_return_url: http://127.0.0.1:4455/welcome
-  methods:
-    totp:
-      config:
-        issuer: Kratos
-      enabled: true
-    lookup_secret:
-      enabled: true
-    link:
-      enabled: true
-    code:
-      passwordless_enabled: true
+  # methods:
+  #   totp:
+  #     config:
+  #       issuer: Kratos
+  #     enabled: true
+  #   lookup_secret:
+  #     enabled: true
+  #   link:
+  #     enabled: true
+  #   code:
+  #     passwordless_enabled: true
 
 log:
   level: debug

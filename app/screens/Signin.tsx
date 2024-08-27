@@ -1,10 +1,21 @@
 import { useNavigation } from "@react-navigation/native";
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Image } from "expo-image";
+import { newOrySdk } from "../utils/orySdk";
+import * as AuthSession from "expo-auth-session";
 
 export default function Signin() {
+  const orySdk = newOrySdk();
+
   return (
     <View style={[styles.blackBg]}>
       <ScrollView
@@ -20,7 +31,7 @@ export default function Signin() {
                   fontSize: 24,
                   lineHeight: 36,
                   color: "#fff",
-
+                  textAlign: "center",
                   marginBottom: 40,
                 },
               ]}
@@ -28,6 +39,22 @@ export default function Signin() {
               Sign in
             </Text>
             <Pressable
+              onPress={async () => {
+                try {
+                  let { data } = await orySdk.createNativeLoginFlow({
+                    returnTo: AuthSession.makeRedirectUri({
+                      preferLocalhost: true,
+                      path: "/Callback",
+                    }),
+                    returnSessionTokenExchangeCode: true,
+                  });
+                  Linking.openURL(`https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=593019911827-pug37laickoaummfsuinncrtfqo54em8.apps.googleusercontent.com&redirect_uri=http://localhost:8081/Callback&scope=openid%20email%20profile&access_type=offline&prompt=consent
+`);
+                  console.log({ data });
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
               style={[
                 {
                   backgroundColor: "#fff",
@@ -42,7 +69,7 @@ export default function Signin() {
               ]}
             >
               <Image
-                source={require("./../assets/google_logo.svg")}
+                source={require("./../assets/google_logo.png")}
                 style={[{ width: 30, height: 30 }]}
               />
 

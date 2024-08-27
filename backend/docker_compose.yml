@@ -68,57 +68,57 @@ services:
     networks:
       - caster
 
-  caster:
-    build:
-      context: .
-      dockerfile: ./caster/Dockerfile
-    depends_on:
-      - caster_kratos
-    ports:
-      - "8083:8083"
-    environment:
-      - GIN_MODE=release
-    networks:
-      - caster
+  # caster:
+  #   build:
+  #     context: .
+  #     dockerfile: ./caster/Dockerfile
+  #   depends_on:
+  #     - caster_kratos
+  #   ports:
+  #     - "8083:8083"
+  #   environment:
+  #     - GIN_MODE=release
+  #   networks:
+  #     - caster
 
-  billing:
-    build:
-      context: .
-      dockerfile: ./billing/Dockerfile
-    depends_on:
-      - caster_kratos
-      - migrate
-    ports:
-      - "8084:8084"
-    env_file: ./.env
-    environment:
-      - GIN_MODE=release
-      - DSN=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@kratos_postgres:5432/caster?sslmode=disable
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-      - STRIPE_API_KEY=${STRIPE_API_KEY}
-    networks:
-      - caster
+  # billing:
+  #   build:
+  #     context: .
+  #     dockerfile: ./billing/Dockerfile
+  #   depends_on:
+  #     - caster_kratos
+  #     - migrate
+  #   ports:
+  #     - "8084:8084"
+  #   env_file: ./.env
+  #   environment:
+  #     - GIN_MODE=release
+  #     - DSN=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@kratos_postgres:5432/caster?sslmode=disable
+  #     - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+  #     - STRIPE_API_KEY=${STRIPE_API_KEY}
+  #   networks:
+  #     - caster
 
-  migrate:
-    image: migrate/migrate
-    networks:
-      - caster
-    volumes:
-      - type: bind
-        source: ./billing/migrations
-        target: /etc/billing/migrations
-    command:
-      [
-        "-path",
-        "/etc/billing/migrations",
-        "-database",
-        "postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@kratos_postgres:5432/caster?sslmode=disable",
-        "up",
-      ]
-    links:
-      - kratos_postgres
-    depends_on:
-      - kratos_postgres
+  # migrate:
+  #   image: migrate/migrate
+  #   networks:
+  #     - caster
+  #   volumes:
+  #     - type: bind
+  #       source: ./billing/migrations
+  #       target: /etc/billing/migrations
+  #   command:
+  #     [
+  #       "-path",
+  #       "/etc/billing/migrations",
+  #       "-database",
+  #       "postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@kratos_postgres:5432/caster?sslmode=disable",
+  #       "up",
+  #     ]
+  #   links:
+  #     - kratos_postgres
+  #   depends_on:
+  #     - kratos_postgres
 
 networks:
   caster:
