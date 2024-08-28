@@ -33,6 +33,25 @@ serve:
     base_url: http://caster_kratos:4434/
 
 selfservice:
+  methods:
+    oidc:
+      config:
+        providers:
+          - id: google
+            provider: google
+            mapper_url: file:///etc/config/kratos/mapper.jsonnet
+            scope:
+              - email
+              - profile
+              - openid
+            requested_claims:
+              id_token:
+                email:
+                  essential: true
+                email_verified:
+                  essential: true
+                hd: null
+      enabled: true
   allowed_return_urls:
     - http://localhost:8081/Callback
   flows:
@@ -42,17 +61,6 @@ selfservice:
           hooks:
             - hook: session
   default_browser_return_url: http://127.0.0.1:4455/welcome
-  # methods:
-  #   totp:
-  #     config:
-  #       issuer: Kratos
-  #     enabled: true
-  #   lookup_secret:
-  #     enabled: true
-  #   link:
-  #     enabled: true
-  #   code:
-  #     passwordless_enabled: true
 
 log:
   level: debug
@@ -78,10 +86,6 @@ identity:
   schemas:
     - id: default
       url: file:///etc/config/kratos/identity.schema.json
-
-courier:
-  smtp:
-    connection_uri: smtps://test:test@caster_mailslurper:1025/?skip_ssl_verify=true
 
 feature_flags:
   use_continue_with_transitions: true

@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import {
   Linking,
   Pressable,
@@ -12,6 +12,7 @@ import {
 import { Image } from "expo-image";
 import { newOrySdk } from "../utils/orySdk";
 import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
 
 export default function Signin() {
   const orySdk = newOrySdk();
@@ -41,6 +42,9 @@ export default function Signin() {
             <Pressable
               onPress={async () => {
                 try {
+                  // const flow = await initializeFlow("login");
+                  // const socialProviders = getProviders(flow.ui.nodes);
+                  // console.log({ socialProviders });
                   let { data } = await orySdk.createNativeLoginFlow({
                     returnTo: AuthSession.makeRedirectUri({
                       preferLocalhost: true,
@@ -48,9 +52,37 @@ export default function Signin() {
                     }),
                     returnSessionTokenExchangeCode: true,
                   });
-                  Linking.openURL(`https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=593019911827-pug37laickoaummfsuinncrtfqo54em8.apps.googleusercontent.com&redirect_uri=http://localhost:8081/Callback&scope=openid%20email%20profile&access_type=offline&prompt=consent
-`);
-                  console.log({ data });
+                  let link = "";
+                  try {
+                    await orySdk.updateLoginFlow({
+                      flow: data.id,
+                      updateLoginFlowBody: {
+                        method: "oidc",
+                        provider: "google",
+                      },
+                    });
+                  } catch (error: any) {
+                    if (error?.response?.data?.redirect_browser_to) {
+                      link = error?.response?.data?.redirect_browser_to;
+                    }
+                  }
+                  console.log(
+                    AuthSession.makeRedirectUri({
+                      preferLocalhost: true,
+                      path: "/Callback",
+                    })
+                  );
+                  const result = await WebBrowser.openAuthSessionAsync(
+                    link,
+                    AuthSession.makeRedirectUri({
+                      preferLocalhost: true,
+                      path: "/Callback",
+                    })
+                  );
+
+                  console.log({ result });
+                  // Linking.openURL(`https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=593019911827-pug37laickoaummfsuinncrtfqo54em8.apps.googleusercontent.com&redirect_uri=http://localhost:8081/Callback&scope=openid%20email%20profile&access_type=offline&prompt=consent
+                  // `);
                 } catch (error) {
                   console.log(error);
                 }
