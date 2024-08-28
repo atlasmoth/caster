@@ -1,14 +1,5 @@
-import { useNavigation } from "@react-navigation/native";
-import { useState, useEffect, useCallback } from "react";
-import axios, { AxiosError } from "axios";
-import {
-  Linking,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useEffect } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Image } from "expo-image";
 import { newOrySdk } from "../utils/orySdk";
 import * as AuthSession from "expo-auth-session";
@@ -16,6 +7,11 @@ import * as WebBrowser from "expo-web-browser";
 
 export default function Signin() {
   const orySdk = newOrySdk();
+  useEffect(() => {
+    WebBrowser.maybeCompleteAuthSession({
+      skipRedirectCheck: true,
+    });
+  }, []);
 
   return (
     <View style={[styles.blackBg]}>
@@ -42,16 +38,14 @@ export default function Signin() {
             <Pressable
               onPress={async () => {
                 try {
-                  // const flow = await initializeFlow("login");
-                  // const socialProviders = getProviders(flow.ui.nodes);
-                  // console.log({ socialProviders });
                   let { data } = await orySdk.createNativeLoginFlow({
                     returnTo: AuthSession.makeRedirectUri({
                       preferLocalhost: true,
-                      path: "/Callback",
+                      path: "/Signin",
                     }),
                     returnSessionTokenExchangeCode: true,
                   });
+
                   let link = "";
                   try {
                     await orySdk.updateLoginFlow({
@@ -66,23 +60,23 @@ export default function Signin() {
                       link = error?.response?.data?.redirect_browser_to;
                     }
                   }
-                  console.log(
-                    AuthSession.makeRedirectUri({
-                      preferLocalhost: true,
-                      path: "/Callback",
-                    })
-                  );
+
                   const result = await WebBrowser.openAuthSessionAsync(
                     link,
                     AuthSession.makeRedirectUri({
                       preferLocalhost: true,
-                      path: "/Callback",
+                      path: "/Signin",
                     })
                   );
 
-                  console.log({ result });
-                  // Linking.openURL(`https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=593019911827-pug37laickoaummfsuinncrtfqo54em8.apps.googleusercontent.com&redirect_uri=http://localhost:8081/Callback&scope=openid%20email%20profile&access_type=offline&prompt=consent
-                  // `);
+                  if (result.type === "success") {
+                    const code = new URL(result.url).searchParams.get("code")!;
+                    const session = await orySdk.exchangeSessionToken({
+                      initCode: data.session_token_exchange_code!,
+                      returnToCode: code,
+                    });
+                    console.log(JSON.stringify(session.data, null, 2));
+                  }
                 } catch (error) {
                   console.log(error);
                 }
@@ -101,8 +95,8 @@ export default function Signin() {
               ]}
             >
               <Image
-                source={require("./../assets/google_logo.png")}
-                style={[{ width: 30, height: 30 }]}
+                source={require("./../assets/google.png")}
+                style={[{ width: 30, height: 30, backgroundColor: "#fff" }]}
               />
 
               <Text

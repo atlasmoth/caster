@@ -53,7 +53,9 @@ selfservice:
                 hd: null
       enabled: true
   allowed_return_urls:
-    - http://localhost:8081/Callback
+    - http://localhost:8081/Signin
+    - exp://localhost:8081/Signin
+    - exp://localhost:8081/--/Signin
   flows:
     registration:
       after:
