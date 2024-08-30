@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { Image } from "expo-image";
 import { newOrySdk } from "../utils/orySdk";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
+import { baseStyles } from "../utils/baseStyles";
 
-export default function Signin() {
+export default function Signin({ navigation }: any) {
   const orySdk = newOrySdk();
   useEffect(() => {
     WebBrowser.maybeCompleteAuthSession({
@@ -14,17 +15,17 @@ export default function Signin() {
   }, []);
 
   return (
-    <View style={[styles.blackBg]}>
+    <View style={[baseStyles.blackBg]}>
       <ScrollView
-        style={[styles.container]}
+        style={[baseStyles.container]}
         contentContainerStyle={{ flex: 1 }}
       >
-        <View style={[styles.centerViewContainer]}>
+        <View style={[baseStyles.centerViewContainer]}>
           <View>
             <Text
               style={[
+                baseStyles.boldText,
                 {
-                  fontFamily: "Chirp_Bold",
                   fontSize: 24,
                   lineHeight: 36,
                   color: "#fff",
@@ -75,7 +76,8 @@ export default function Signin() {
                       initCode: data.session_token_exchange_code!,
                       returnToCode: code,
                     });
-                    console.log(JSON.stringify(session.data, null, 2));
+                    // refactor this code later
+                    navigation.replace("CreatePayment", session.data);
                   }
                 } catch (error) {
                   console.log(error);
@@ -101,8 +103,8 @@ export default function Signin() {
 
               <Text
                 style={[
+                  baseStyles.boldText,
                   {
-                    fontFamily: "Chirp_Bold",
                     fontSize: 16,
                     lineHeight: 24,
                     color: "#000",
@@ -119,22 +121,3 @@ export default function Signin() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  centerViewContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-  },
-
-  blackBg: {
-    backgroundColor: "#000",
-    flexGrow: 1,
-  },
-  container: {
-    width: "100%",
-    maxWidth: 500,
-    marginHorizontal: "auto",
-    paddingHorizontal: 16,
-    backgroundColor: "#000",
-  },
-});

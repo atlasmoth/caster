@@ -11,7 +11,6 @@ import (
 	"github.com/atlasmoth/caster/backend/billing/internal/data"
 	stripeGateway "github.com/atlasmoth/caster/backend/billing/internal/gateway/stripe/http"
 
-	// kratos "github.com/atlasmoth/caster/backend/middleware"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	"github.com/stripe/stripe-go/v79"
@@ -41,8 +40,7 @@ func main() {
 	ctrl := billing.New(stripeGatewayForController, models)
 
 	router := gin.Default()
-	// k := kratos.NewMiddleware("http://caster_kratos:4433")
-	// router.Use(k.Session())
+	router.POST("/users/checkout", ctrl.CreateCheckoutSession)
 	router.GET("/users/validate", ctrl.SubscriptionValidator)
 	router.POST("/users/subscription", ctrl.CreateSubscription)
 	router.POST("/stripe/webhook", ctrl.HandleStripeWebhook)

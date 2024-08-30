@@ -18,6 +18,7 @@ import (
 type StripeGateway interface {
 	CreateCustomer(email string) (*stripe.Customer, error)
 	CreateSubscription(email string) (*stripe.Subscription, error)
+	CreateCheckoutSession(email string) (*stripe.CheckoutSession, error)
 }
 
 type Controller struct {
@@ -41,6 +42,24 @@ func (ctrl *Controller) CreateSubscription(c *gin.Context) {
 		return
 	}
 	subscription, err := ctrl.stripeGateway.CreateSubscription(*email)
+	if err != nil {
+		returnErrorResponse(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    subscription,
+	})
+
+}
+func (ctrl *Controller) CreateCheckoutSession(c *gin.Context) {
+
+	email, err := ctrl.validateKratosSession(c.Request)
+	if err != nil {
+		returnErrorResponse(c, err)
+		return
+	}
+	subscription, err := ctrl.stripeGateway.CreateCheckoutSession(*email)
 	if err != nil {
 		returnErrorResponse(c, err)
 		return
@@ -145,7 +164,7 @@ func (ctrl *Controller) validateKratosSession(r *http.Request) (*string, error) 
 		return nil, errors.New("no session token found")
 	}
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://localhost:4433/sessions/whoami", nil)
+	req, err := http.NewRequest("GET", "http://caster_kratos:4433/sessions/whoami", nil)
 	req.Header.Set("Authorization", sessionToken)
 	req.Header.Set("Accept", "application/json")
 

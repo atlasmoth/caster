@@ -5,6 +5,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useFonts } from "expo-font";
 import { SheetProvider } from "react-native-actions-sheet";
 import Signin from "./screens/Signin";
+import SuccessPayment from "./screens/SuccessPayment";
+import CreatePayment from "./screens/CreatePayment";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +27,16 @@ export default function App() {
           <Stack.Screen
             name="Signin"
             component={Signin}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="SuccessPayment"
+            component={SuccessPayment}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CreatePayment"
+            component={CreatePayment}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
