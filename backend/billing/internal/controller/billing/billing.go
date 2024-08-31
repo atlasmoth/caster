@@ -18,7 +18,7 @@ import (
 type StripeGateway interface {
 	CreateCustomer(email string) (*stripe.Customer, error)
 	CreateSubscription(email string) (*stripe.Subscription, error)
-	CreateCheckoutSession(email string) (*stripe.CheckoutSession, error)
+	CreateCheckoutSession(email, successUrl, cancelUrl string) (*stripe.CheckoutSession, error)
 }
 
 type Controller struct {
@@ -52,14 +52,23 @@ func (ctrl *Controller) CreateSubscription(c *gin.Context) {
 	})
 
 }
-func (ctrl *Controller) CreateCheckoutSession(c *gin.Context) {
 
+type CreateCheckoutSessionBody struct {
+	SuccessURL  string `json:"successUrl" form:"successUrl" binding:"required"`
+	CancelURL string `json:"cancelUrl" form:"cancelUrl" binding:"required"`
+}
+func (ctrl *Controller) CreateCheckoutSession(c *gin.Context) {
+	body := CreateCheckoutSessionBody{}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		returnErrorResponse(c,err)
+		return
+	}
 	email, err := ctrl.validateKratosSession(c.Request)
 	if err != nil {
 		returnErrorResponse(c, err)
 		return
 	}
-	subscription, err := ctrl.stripeGateway.CreateCheckoutSession(*email)
+	subscription, err := ctrl.stripeGateway.CreateCheckoutSession(*email, body.SuccessURL, body.CancelURL)
 	if err != nil {
 		returnErrorResponse(c, err)
 		return
@@ -95,6 +104,15 @@ func (ctrl *Controller) SubscriptionValidator(c *gin.Context) {
 		"success": true,
 		"data":    user,
 	})
+
+}
+
+func (ctrl *Controller) Redirect(c *gin.Context) {
+
+	redirectURL := c.Query("to")
+	sessionId := c.Query("session_id")
+
+	c.Redirect(http.StatusFound, redirectURL + "?session_id="+sessionId)
 
 }
 

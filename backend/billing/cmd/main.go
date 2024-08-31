@@ -40,6 +40,8 @@ func main() {
 	ctrl := billing.New(stripeGatewayForController, models)
 
 	router := gin.Default()
+	router.Use(CORSMiddleware())
+	router.GET("/users/redirect", ctrl.Redirect)
 	router.POST("/users/checkout", ctrl.CreateCheckoutSession)
 	router.GET("/users/validate", ctrl.SubscriptionValidator)
 	router.POST("/users/subscription", ctrl.CreateSubscription)
@@ -72,4 +74,21 @@ func openDB(cfg config) (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+
+func CORSMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Content-Length, X-Requested-With")
+        c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(204)
+            return
+        }
+
+        c.Next()
+    }
 }

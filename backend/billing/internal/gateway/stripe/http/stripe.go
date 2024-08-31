@@ -57,7 +57,7 @@ func (g *Gateway) CreateSubscription(email string) (*stripe.Subscription, error)
 
 }
 
-func (g *Gateway) CreateCheckoutSession(email string) (*stripe.CheckoutSession, error) {
+func (g *Gateway) CreateCheckoutSession(email, successUrl, cancelUrl string) (*stripe.CheckoutSession, error) {
 
 	customer, err := g.CreateCustomer(email)
 	if err != nil {
@@ -75,8 +75,8 @@ func (g *Gateway) CreateCheckoutSession(email string) (*stripe.CheckoutSession, 
 		Metadata: map[string]string{
 			"user_id": email,
 		},
-		SuccessURL: stripe.String("https://example.com/success?session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:  stripe.String("https://example.com/cancel"),
+		SuccessURL: stripe.String("http://localhost:8084/users/redirect?to="+ successUrl + "&session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:  stripe.String("http://localhost:8084/users/redirect?to="+ cancelUrl),
 	}
 	result, err := session.New(params)
 	if err != nil {
