@@ -67,6 +67,7 @@ export default function Signin({ navigation }: any) {
                     AuthSession.makeRedirectUri({
                       preferLocalhost: true,
                       path: "/Signin",
+                      scheme: "atlasmoth_caster",
                     })
                   );
 

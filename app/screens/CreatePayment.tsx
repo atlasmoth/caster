@@ -62,11 +62,13 @@ export default function CreatePayment({ navigation, route }: any) {
                 }
                 setLoading(true);
                 try {
-                  let redirectUri = AuthSession.makeRedirectUri({
-                    preferLocalhost: true,
-                    path: "/CreatePayment",
-                  });
-                  console.log({ redirectUri });
+                  let redirectUri = encodeURI(
+                    AuthSession.makeRedirectUri({
+                      preferLocalhost: true,
+                      path: "CreatePayment",
+                      scheme: "atlasmoth_caster",
+                    })
+                  );
 
                   const res = await axios.post(
                     "http://localhost:8084/users/checkout",

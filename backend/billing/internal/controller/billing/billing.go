@@ -112,7 +112,8 @@ func (ctrl *Controller) Redirect(c *gin.Context) {
 	redirectURL := c.Query("to")
 	sessionId := c.Query("session_id")
 
-	c.Redirect(http.StatusFound, redirectURL + "?session_id="+sessionId)
+	http.Redirect(c.Writer, c.Request,redirectURL + "?session_id="+sessionId, http.StatusFound)
+	
 
 }
 

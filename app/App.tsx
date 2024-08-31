@@ -7,8 +7,21 @@ import { SheetProvider } from "react-native-actions-sheet";
 import Signin from "./screens/Signin";
 import SuccessPayment from "./screens/SuccessPayment";
 import CreatePayment from "./screens/CreatePayment";
+import { makeRedirectUri } from "expo-auth-session";
 
 const Stack = createNativeStackNavigator();
+
+const redirectUri = makeRedirectUri({});
+
+const linking = {
+  prefixes: [redirectUri],
+  config: {
+    screens: {
+      CreatePayment: "CreatePayment",
+      Signin: "Signin",
+    },
+  },
+};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -22,7 +35,7 @@ export default function App() {
 
   return (
     <SheetProvider>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <Stack.Navigator>
           <Stack.Screen
             name="Signin"
