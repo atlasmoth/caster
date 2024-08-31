@@ -15,6 +15,12 @@ import * as WebBrowser from "expo-web-browser";
 export default function CreatePayment({ navigation, route }: any) {
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    WebBrowser.maybeCompleteAuthSession({
+      skipRedirectCheck: true,
+    });
+  }, []);
+
   return (
     <View style={[baseStyles.blackBg]}>
       <ScrollView
@@ -56,17 +62,17 @@ export default function CreatePayment({ navigation, route }: any) {
                 }
                 setLoading(true);
                 try {
+                  let redirectUri = AuthSession.makeRedirectUri({
+                    preferLocalhost: true,
+                    path: "/CreatePayment",
+                  });
+                  console.log({ redirectUri });
+
                   const res = await axios.post(
                     "http://localhost:8084/users/checkout",
                     {
-                      successUrl: AuthSession.makeRedirectUri({
-                        preferLocalhost: true,
-                        path: "/SuccessPayment",
-                      }),
-                      cancelUrl: AuthSession.makeRedirectUri({
-                        preferLocalhost: true,
-                        path: "/CreatePayment",
-                      }),
+                      successUrl: redirectUri,
+                      cancelUrl: redirectUri,
                     },
                     {
                       withCredentials: false,
@@ -75,8 +81,13 @@ export default function CreatePayment({ navigation, route }: any) {
                       },
                     }
                   );
-                  await Linking.openURL(res.data.data.url);
 
+                  const result = await WebBrowser.openAuthSessionAsync(
+                    res.data.data.url,
+                    redirectUri
+                  );
+
+                  console.log({ result });
                   setLoading(false);
                 } catch (error) {
                   setLoading(false);
