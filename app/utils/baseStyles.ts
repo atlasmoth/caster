@@ -12,7 +12,7 @@ export const baseStyles = StyleSheet.create({
   },
   container: {
     width: "100%",
-    maxWidth: 500,
+    maxWidth: 470,
     marginHorizontal: "auto",
     paddingHorizontal: 16,
     backgroundColor: "#000",

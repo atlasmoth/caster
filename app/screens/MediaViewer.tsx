@@ -73,7 +73,6 @@ const VideoPlayer = ({
 }) => {
   const video = useRef<Video>(null);
   const [status, setStatus] = useState<any>({});
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
 
   const togglePlayPause = () => {
     if (status.isPlaying) {
@@ -100,8 +99,7 @@ const VideoPlayer = ({
         isLooping
         shouldPlay
         onPlaybackStatusUpdate={setStatus}
-        resizeMode={ResizeMode.CONTAIN}
-        useNativeControls={true}
+        resizeMode={ResizeMode.COVER}
         videoStyle={{
           height: mediaHeight,
           width: mediaWidth,
@@ -115,7 +113,7 @@ const MediaViewer: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const { width, height } = useWindowDimensions();
   const mediaHeight = height * 0.6;
-  const mediaWidth = Math.min(500, width);
+  const mediaWidth = Math.min(470, width);
   const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
 
   const handleScroll = (event: any) => {
@@ -135,7 +133,7 @@ const MediaViewer: React.FC = () => {
   return (
     <View style={[baseStyles.blackBg]}>
       <View
-        style={[{ width: "100%", maxWidth: 500, marginHorizontal: "auto" }]}
+        style={[{ width: "100%", maxWidth: 470, marginHorizontal: "auto" }]}
       >
         <View style={[{ position: "relative", justifyContent: "center" }]}>
           <FlatList
@@ -184,6 +182,38 @@ const MediaViewer: React.FC = () => {
               <FontAwesome6 name="circle-arrow-right" size={30} color="#fff" />
             </TouchableOpacity>
           )}
+
+          <View
+            style={[
+              {
+                flexDirection: "row",
+                justifyContent: "center",
+                position: "absolute",
+                zIndex: 10,
+                bottom: 20,
+                left: 0,
+                right: 0,
+              },
+            ]}
+          >
+            {mediaData.map((t, index) => (
+              <View
+                key={index.toString()}
+                style={[
+                  {
+                    backgroundColor:
+                      currentIndex === index
+                        ? "rgba(255,255,255,1)"
+                        : "rgba(255,255,255,0.6)",
+                    width: 8,
+                    height: 8,
+                    borderRadius: 8,
+                    marginRight: 2,
+                  },
+                ]}
+              ></View>
+            ))}
+          </View>
         </View>
       </View>
     </View>
