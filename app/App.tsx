@@ -19,10 +19,10 @@ const linking = {
   prefixes: [redirectUri],
   config: {
     screens: {
-      CreatePayment: "CreatePayment",
-      Signin: "Signin",
-      MediaViewer: "MediaViewer",
-      Comments: "/:id/Comments",
+      CreatePayment: "create_payment",
+      Signin: "signin",
+      MediaViewer: "media_viewer",
+      Comments: "/:id/comments",
     },
   },
 };
