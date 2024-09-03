@@ -5,6 +5,7 @@ import { newOrySdk } from "../utils/orySdk";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { baseStyles } from "../utils/baseStyles";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Signin({ navigation }: any) {
   const orySdk = newOrySdk();
@@ -13,6 +14,8 @@ export default function Signin({ navigation }: any) {
       skipRedirectCheck: true,
     });
   }, []);
+
+  const { setSession } = useAuth();
 
   return (
     <View style={[baseStyles.blackBg]}>
@@ -77,8 +80,10 @@ export default function Signin({ navigation }: any) {
                       initCode: data.session_token_exchange_code!,
                       returnToCode: code,
                     });
+
+                    setSession(session.data);
                     // refactor this code later
-                    navigation.replace("CreatePayment", session.data);
+                    navigation.replace("CreatePayment");
                   }
                 } catch (error) {
                   console.log(error);

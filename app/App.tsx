@@ -10,6 +10,8 @@ import CreatePayment from "./screens/CreatePayment";
 import { makeRedirectUri } from "expo-auth-session";
 import MediaViewer from "./screens/MediaViewer";
 import Comments from "./screens/Comments";
+import { AuthProvider } from "./hooks/useAuth";
+import Loading from "./screens/Loading";
 
 const Stack = createNativeStackNavigator();
 
@@ -33,41 +35,56 @@ export default function App() {
     Chirp_Regular: require("./assets/fonts/chirp_regular.otf"),
   });
 
-  if (!fontsLoaded) {
-    return null;
-  }
-
   return (
-    <SheetProvider>
-      <NavigationContainer linking={linking}>
-        <Stack.Navigator>
-          <Stack.Screen
-            name="MediaViewer"
-            component={MediaViewer}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Signin"
-            component={Signin}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Comments"
-            component={Comments}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="SuccessPayment"
-            component={SuccessPayment}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="CreatePayment"
-            component={CreatePayment}
-            options={{ headerShown: false }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SheetProvider>
+    <AuthProvider>
+      {({ loading, session, subscribed }) => {
+        if (!fontsLoaded || loading) {
+          return <Loading />;
+        }
+        let initailRouteName = "Signin";
+
+        if (session && subscribed) {
+          initailRouteName = "MediaViewer";
+        }
+        if (session && !subscribed) {
+          initailRouteName = "CreatePayment";
+        }
+
+        return (
+          <SheetProvider>
+            <NavigationContainer linking={linking}>
+              <Stack.Navigator initialRouteName={initailRouteName}>
+                <Stack.Screen
+                  name="Signin"
+                  component={Signin}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="MediaViewer"
+                  component={MediaViewer}
+                  options={{ headerShown: false }}
+                />
+
+                <Stack.Screen
+                  name="Comments"
+                  component={Comments}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="SuccessPayment"
+                  component={SuccessPayment}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="CreatePayment"
+                  component={CreatePayment}
+                  options={{ headerShown: false }}
+                />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </SheetProvider>
+        );
+      }}
+    </AuthProvider>
   );
 }

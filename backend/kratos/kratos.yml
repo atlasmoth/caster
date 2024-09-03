@@ -77,7 +77,8 @@ secrets:
 
 ciphers:
   algorithm: xchacha20-poly1305
-
+session:
+  lifespan: 720h
 hashers:
   algorithm: bcrypt
   bcrypt:

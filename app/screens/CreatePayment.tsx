@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { baseStyles } from "../utils/baseStyles";
 import {
   ActivityIndicator,
-  Linking,
   Pressable,
   ScrollView,
   Text,
@@ -11,10 +10,12 @@ import {
 import axios from "axios";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
+import { useAuth } from "../hooks/useAuth";
 
-export default function CreatePayment({ navigation, route }: any) {
+export default function CreatePayment({ navigation }: any) {
   const [loading, setLoading] = useState(false);
 
+  const { session } = useAuth();
   useEffect(() => {
     WebBrowser.maybeCompleteAuthSession({
       skipRedirectCheck: true,
@@ -79,7 +80,7 @@ export default function CreatePayment({ navigation, route }: any) {
                     {
                       withCredentials: false,
                       headers: {
-                        Authorization: `Bearer ${route.params.session_token}`,
+                        Authorization: `Bearer ${session.session_token}`,
                       },
                     }
                   );
