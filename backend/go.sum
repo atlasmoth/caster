@@ -1,5 +1,7 @@
 github.com/atlasmoth/go_neynar_sdk v0.0.1 h1:0fH53XcMpFIE5wAoiCPyq+DmkmxnTqvqAl5mIrjfSVg=
 github.com/atlasmoth/go_neynar_sdk v0.0.1/go.mod h1:3YV0iaeJTSkXSJEX7QP+5SI5wNfu2SnCrivsjdrOScg=
+github.com/atlasmoth/go_neynar_sdk v0.0.2 h1:MOFBdHMGg9QnrT67dtoERjS5O/f/4vBqYLunRM28Lec=
+github.com/atlasmoth/go_neynar_sdk v0.0.2/go.mod h1:oC+Ook2/iB022eRaKbwZAw45LHdhQQt4EGRp7DECVzg=
 github.com/bytedance/sonic v1.12.1 h1:jWl5Qz1fy7X1ioY74WqO0KjAMtAGQs4sYnjiEBiyX24=
 github.com/bytedance/sonic v1.12.1/go.mod h1:B8Gt/XvtZ3Fqj+iSKMypzymZxw/FVwgIGKzMzT9r/rk=
 github.com/bytedance/sonic/loader v0.1.1/go.mod h1:ncP89zfokxS5LZrJxl5z0UJcsk4M4yY2JpfqGeCtNLU=

@@ -8,9 +8,11 @@ import (
 	"time"
 
 	billing "github.com/atlasmoth/caster/backend/internal/controller/billing"
+	"github.com/atlasmoth/caster/backend/internal/controller/feed"
 	"github.com/atlasmoth/caster/backend/internal/data"
 	stripeGateway "github.com/atlasmoth/caster/backend/internal/gateway/stripe/http"
 
+	neynarv2 "github.com/atlasmoth/go_neynar_sdk/v2"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	"github.com/stripe/stripe-go/v79"
@@ -37,16 +39,21 @@ func main() {
 	stripe.Key = stripeApiKey
 	stripeGatewayForController := stripeGateway.New()
 	models := data.NewModels(db)
-	ctrl := billing.New(stripeGatewayForController, models)
+	billingController := billing.New(stripeGatewayForController, models)
+	neynarApiKey := os.Getenv("NEYNAR_API_KEY")
+	neynarV2Client := neynarv2.NewAPIClient(neynarv2.NewConfiguration())
+	feedController := feed.New(&neynarApiKey, neynarV2Client)
 
+	// routing
 	router := gin.Default()
 	router.Use(CORSMiddleware())
-	router.GET("/users/redirect", ctrl.Redirect)
-	router.POST("/users/checkout", ctrl.CreateCheckoutSession)
-	router.GET("/users/validate", ctrl.SubscriptionValidator)
-	router.POST("/users/subscription", ctrl.CreateSubscription)
-	router.POST("/stripe/webhook", ctrl.HandleStripeWebhook)
-	router.GET("/users/whoami", ctrl.WhoAmI)
+	router.GET("/users/redirect", billingController.Redirect)
+	router.POST("/users/checkout", billingController.CreateCheckoutSession)
+	router.GET("/users/validate", billingController.SubscriptionValidator)
+	router.POST("/users/subscription", billingController.CreateSubscription)
+	router.POST("/stripe/webhook", billingController.HandleStripeWebhook)
+	router.GET("/users/whoami", billingController.WhoAmI)
+	router.GET("/users/feed", feedController.GetFeed)
 	router.Run(":8084")
 }
 
@@ -63,7 +70,6 @@ func openDB(cfg config) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Set the maximum idle timeout.
 	db.SetConnMaxIdleTime(duration)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

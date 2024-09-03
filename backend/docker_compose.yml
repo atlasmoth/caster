@@ -83,6 +83,7 @@ services:
       - DSN=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@kratos_postgres:5432/caster?sslmode=disable
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - STRIPE_API_KEY=${STRIPE_API_KEY}
+      - NEYNAR_API_KEY=${NEYNAR_API_KEY}
     networks:
       - caster
 
