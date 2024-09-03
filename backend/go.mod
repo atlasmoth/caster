@@ -3,7 +3,7 @@ module github.com/atlasmoth/caster/backend
 go 1.21.6
 
 require (
-	github.com/atlasmoth/go_neynar_sdk v0.0.2
+	github.com/atlasmoth/go_neynar_sdk v0.0.3
 	github.com/gin-gonic/gin v1.10.0
 	github.com/lib/pq v1.10.9
 	github.com/stripe/stripe-go/v79 v79.8.0
