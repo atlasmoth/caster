@@ -15,8 +15,6 @@ import { ResizeMode, Video } from "expo-av";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { baseStyles } from "../utils/baseStyles";
 
-const { width, height } = Dimensions.get("window");
-
 type MediaItem = {
   type: "image" | "video";
   uri: string;
@@ -110,7 +108,7 @@ const VideoPlayer = ({
     </View>
   );
 };
-const MediaCast: React.FC = () => {
+const MediaCast: React.FC = ({ navigation }: any) => {
   const flatListRef = useRef<FlatList<MediaItem>>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const { width, height } = useWindowDimensions();
@@ -133,7 +131,7 @@ const MediaCast: React.FC = () => {
   };
 
   return (
-    <View style={[baseStyles.blackBg]}>
+    <SafeAreaView style={[baseStyles.blackBg]}>
       <View
         style={[{ width: "100%", maxWidth: 470, marginHorizontal: "auto" }]}
       >
@@ -159,14 +157,20 @@ const MediaCast: React.FC = () => {
           />
           <View style={[{ flex: 1 }]}>
             <Text
-              style={[baseStyles.boldText, { color: "#fff", marginBottom: 3 }]}
+              style={[
+                baseStyles.boldText,
+                { color: "#fff", marginBottom: 3, fontSize: 16 },
+              ]}
             >
-              Kitanthegreat
+              Jason Goldberg
             </Text>
             <Text
-              style={[baseStyles.regularText, { color: "#fff", fontSize: 12 }]}
+              style={[
+                baseStyles.regularText,
+                { color: "rgba(153, 153, 153,0.6)" },
+              ]}
             >
-              Original audio
+              @betashop.eth
             </Text>
           </View>
         </View>
@@ -272,7 +276,11 @@ const MediaCast: React.FC = () => {
             I just finally noticed how much stingier Claude is with the response
             tokens
           </Text>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("Comments", { id: 1234 });
+            }}
+          >
             <Text
               style={[
                 baseStyles.regularText,
@@ -290,7 +298,7 @@ const MediaCast: React.FC = () => {
           </Text>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

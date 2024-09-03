@@ -9,6 +9,7 @@ import SuccessPayment from "./screens/SuccessPayment";
 import CreatePayment from "./screens/CreatePayment";
 import { makeRedirectUri } from "expo-auth-session";
 import MediaViewer from "./screens/MediaViewer";
+import Comments from "./screens/Comments";
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,7 @@ const linking = {
       CreatePayment: "CreatePayment",
       Signin: "Signin",
       MediaViewer: "MediaViewer",
+      Comments: "/:id/Comments",
     },
   },
 };
@@ -47,6 +49,11 @@ export default function App() {
           <Stack.Screen
             name="Signin"
             component={Signin}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Comments"
+            component={Comments}
             options={{ headerShown: false }}
           />
           <Stack.Screen
