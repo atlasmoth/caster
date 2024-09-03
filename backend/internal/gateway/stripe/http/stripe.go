@@ -67,7 +67,7 @@ func (g *Gateway) CreateCheckoutSession(email, successUrl, cancelUrl string) (*s
 		Customer: &customer.ID,
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
-				Price:    stripe.String("price_1Pr1bfE5bGjCBEBndwRCgT5K"), 
+				Price:    stripe.String("price_1Pr1bfE5bGjCBEBndwRCgT5K"),
 				Quantity: stripe.Int64(1),
 			},
 		},
@@ -75,8 +75,8 @@ func (g *Gateway) CreateCheckoutSession(email, successUrl, cancelUrl string) (*s
 		Metadata: map[string]string{
 			"user_id": email,
 		},
-		SuccessURL: stripe.String("http://localhost:8084/users/redirect?to="+ successUrl + "&session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:  stripe.String("http://localhost:8084/users/redirect?to="+ cancelUrl),
+		SuccessURL: stripe.String("http://localhost:8084/users/redirect?to=" + successUrl + "&session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:  stripe.String("http://localhost:8084/users/redirect?to=" + cancelUrl),
 	}
 	result, err := session.New(params)
 	if err != nil {

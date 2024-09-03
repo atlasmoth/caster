@@ -68,23 +68,10 @@ services:
     networks:
       - caster
 
-  # caster:
-  #   build:
-  #     context: .
-  #     dockerfile: ./caster/Dockerfile
-  #   depends_on:
-  #     - caster_kratos
-  #   ports:
-  #     - "8083:8083"
-  #   environment:
-  #     - GIN_MODE=release
-  #   networks:
-  #     - caster
-
   billing:
     build:
       context: .
-      dockerfile: ./billing/Dockerfile
+      dockerfile: ./Dockerfile
     depends_on:
       - caster_kratos
       - migrate
@@ -105,7 +92,7 @@ services:
       - caster
     volumes:
       - type: bind
-        source: ./billing/migrations
+        source: ./migrations
         target: /etc/billing/migrations
     command:
       [

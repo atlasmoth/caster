@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/atlasmoth/caster/backend/billing/internal/data"
+	"github.com/atlasmoth/caster/backend/internal/data"
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v79"
 	"github.com/stripe/stripe-go/v79/webhook"
@@ -54,13 +54,14 @@ func (ctrl *Controller) CreateSubscription(c *gin.Context) {
 }
 
 type CreateCheckoutSessionBody struct {
-	SuccessURL  string `json:"successUrl" form:"successUrl" binding:"required"`
-	CancelURL string `json:"cancelUrl" form:"cancelUrl" binding:"required"`
+	SuccessURL string `json:"successUrl" form:"successUrl" binding:"required"`
+	CancelURL  string `json:"cancelUrl" form:"cancelUrl" binding:"required"`
 }
+
 func (ctrl *Controller) CreateCheckoutSession(c *gin.Context) {
 	body := CreateCheckoutSessionBody{}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		returnErrorResponse(c,err)
+		returnErrorResponse(c, err)
 		return
 	}
 	email, err := ctrl.validateKratosSession(c.Request)
@@ -126,8 +127,7 @@ func (ctrl *Controller) Redirect(c *gin.Context) {
 	redirectURL := c.Query("to")
 	sessionId := c.Query("session_id")
 
-	http.Redirect(c.Writer, c.Request,redirectURL + "?session_id="+sessionId, http.StatusFound)
-	
+	http.Redirect(c.Writer, c.Request, redirectURL+"?session_id="+sessionId, http.StatusFound)
 
 }
 

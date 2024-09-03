@@ -11,4 +11,4 @@ RUN go mod download
 
 EXPOSE 8084
 
-CMD ["sh", "-c", "go build -o /app/main billing/cmd/*.go && ./main"]
+CMD ["sh", "-c", "go build -o /app/main cmd/*.go && ./main"]

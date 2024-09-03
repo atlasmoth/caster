@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	billing "github.com/atlasmoth/caster/backend/billing/internal/controller/billing"
-	"github.com/atlasmoth/caster/backend/billing/internal/data"
-	stripeGateway "github.com/atlasmoth/caster/backend/billing/internal/gateway/stripe/http"
+	billing "github.com/atlasmoth/caster/backend/internal/controller/billing"
+	"github.com/atlasmoth/caster/backend/internal/data"
+	stripeGateway "github.com/atlasmoth/caster/backend/internal/gateway/stripe/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -46,7 +46,7 @@ func main() {
 	router.GET("/users/validate", ctrl.SubscriptionValidator)
 	router.POST("/users/subscription", ctrl.CreateSubscription)
 	router.POST("/stripe/webhook", ctrl.HandleStripeWebhook)
-	router.GET("/users/whoami",ctrl.WhoAmI)
+	router.GET("/users/whoami", ctrl.WhoAmI)
 	router.Run(":8084")
 }
 
@@ -77,19 +77,18 @@ func openDB(cfg config) (*sql.DB, error) {
 	return db, nil
 }
 
-
 func CORSMiddleware() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Content-Length, X-Requested-With")
-        c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Content-Length, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
-        if c.Request.Method == "OPTIONS" {
-            c.AbortWithStatus(204)
-            return
-        }
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
 
-        c.Next()
-    }
+		c.Next()
+	}
 }
