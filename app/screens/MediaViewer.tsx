@@ -25,12 +25,15 @@ type MediaItem = {
 const mediaData: MediaItem[] = [
   {
     type: "image",
-    uri: "https://via.placeholder.com/800x600.png?text=Image+1",
+    uri: "https://images.unsplash.com/photo-1725261353746-fdb0052adc46?q=80&w=2835&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
-  { type: "video", uri: "https://www.w3schools.com/html/mov_bbb.mp4" },
+  {
+    type: "video",
+    uri: "https://videos.pexels.com/video-files/2677752/2677752-hd_1280_720_30fps.mp4",
+  },
   {
     type: "image",
-    uri: "https://via.placeholder.com/800x600.png?text=Image+2",
+    uri: "https://plus.unsplash.com/premium_photo-1719467541039-567e90c13506?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
 ];
 
@@ -97,7 +100,6 @@ const VideoPlayer = ({
         source={{ uri: src }}
         style={{ flex: 1 }}
         isLooping
-        shouldPlay
         onPlaybackStatusUpdate={setStatus}
         resizeMode={ResizeMode.COVER}
         videoStyle={{
@@ -108,11 +110,11 @@ const VideoPlayer = ({
     </View>
   );
 };
-const MediaViewer: React.FC = () => {
+const MediaCast: React.FC = () => {
   const flatListRef = useRef<FlatList<MediaItem>>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const { width, height } = useWindowDimensions();
-  const mediaHeight = height * 0.6;
+  const mediaHeight = height * 0.5;
   const mediaWidth = Math.min(470, width);
   const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
 
@@ -135,6 +137,39 @@ const MediaViewer: React.FC = () => {
       <View
         style={[{ width: "100%", maxWidth: 470, marginHorizontal: "auto" }]}
       >
+        <View
+          style={[
+            { flexDirection: "row", alignItems: "center", marginVertical: 10 },
+          ]}
+        >
+          <Image
+            source={{
+              uri: "https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671122.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725235200&semt=ais_hybrid",
+            }}
+            style={[
+              {
+                width: 32,
+                height: 32,
+                borderRadius: 32,
+                marginRight: 10,
+                flexShrink: 0,
+              },
+            ]}
+            contentFit="cover"
+          />
+          <View style={[{ flex: 1 }]}>
+            <Text
+              style={[baseStyles.boldText, { color: "#fff", marginBottom: 3 }]}
+            >
+              Kitanthegreat
+            </Text>
+            <Text
+              style={[baseStyles.regularText, { color: "#fff", fontSize: 12 }]}
+            >
+              Original audio
+            </Text>
+          </View>
+        </View>
         <View style={[{ position: "relative", justifyContent: "center" }]}>
           <FlatList
             initialScrollIndex={currentIndex}
@@ -215,9 +250,48 @@ const MediaViewer: React.FC = () => {
             ))}
           </View>
         </View>
+        <View style={[{ marginHorizontal: 16, marginVertical: 10 }]}>
+          <Text
+            style={[baseStyles.boldText, { color: "#fff", fontWeight: "700" }]}
+          >
+            312 likes
+          </Text>
+          <Text
+            style={[
+              baseStyles.regularText,
+              {
+                marginVertical: 10,
+                color: "#fff",
+                fontSize: 15,
+                lineHeight: 20,
+              },
+            ]}
+          >
+            I’ve been using it for a however long it’s been out now. In cursor
+            their both side by side so I switch whenever it’s relevant, I guess
+            I just finally noticed how much stingier Claude is with the response
+            tokens
+          </Text>
+          <TouchableOpacity>
+            <Text
+              style={[
+                baseStyles.regularText,
+                { color: "#0095f6", marginBottom: 10 },
+              ]}
+            >
+              View more
+            </Text>
+          </TouchableOpacity>
+
+          <Text
+            style={[baseStyles.regularText, { color: "rgba(255,255,255,0.7)" }]}
+          >
+            March 31
+          </Text>
+        </View>
       </View>
     </View>
   );
 };
 
-export default MediaViewer;
+export default MediaCast;
