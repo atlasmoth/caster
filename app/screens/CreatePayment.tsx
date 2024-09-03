@@ -11,6 +11,7 @@ import axios from "axios";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { useAuth } from "../hooks/useAuth";
+import { BASE_URL } from "../utils/api";
 
 export default function CreatePayment({ navigation }: any) {
   const [loading, setLoading] = useState(false);
@@ -72,7 +73,7 @@ export default function CreatePayment({ navigation }: any) {
                   );
 
                   const res = await axios.post(
-                    "http://localhost:8084/users/checkout",
+                    `${BASE_URL}/users/checkout`,
                     {
                       successUrl: redirectUri,
                       cancelUrl: redirectUri,
@@ -80,7 +81,7 @@ export default function CreatePayment({ navigation }: any) {
                     {
                       withCredentials: false,
                       headers: {
-                        Authorization: `Bearer ${session.session_token}`,
+                        Authorization: `Bearer ${session?.session_token}`,
                       },
                     }
                   );
@@ -110,7 +111,7 @@ export default function CreatePayment({ navigation }: any) {
               ]}
             >
               {loading ? (
-                <ActivityIndicator size={"small"} color={"#000"} />
+                <ActivityIndicator size={24} color={"#000"} />
               ) : (
                 <Text
                   style={[

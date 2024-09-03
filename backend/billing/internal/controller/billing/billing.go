@@ -106,6 +106,20 @@ func (ctrl *Controller) SubscriptionValidator(c *gin.Context) {
 	})
 
 }
+func (ctrl *Controller) WhoAmI(c *gin.Context) {
+
+	email, err := ctrl.validateKratosSession(c.Request)
+	if err != nil {
+		returnErrorResponse(c, err)
+		return
+	}
+	user, _ := ctrl.models.Users.GetSubscriptionByEmail(*email)
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    user,
+	})
+
+}
 
 func (ctrl *Controller) Redirect(c *gin.Context) {
 

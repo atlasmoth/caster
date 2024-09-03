@@ -46,6 +46,7 @@ func main() {
 	router.GET("/users/validate", ctrl.SubscriptionValidator)
 	router.POST("/users/subscription", ctrl.CreateSubscription)
 	router.POST("/stripe/webhook", ctrl.HandleStripeWebhook)
+	router.GET("/users/whoami",ctrl.WhoAmI)
 	router.Run(":8084")
 }
 

@@ -1,11 +1,19 @@
-import { useEffect } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { Image } from "expo-image";
 import { newOrySdk } from "../utils/orySdk";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { baseStyles } from "../utils/baseStyles";
 import { useAuth } from "../hooks/useAuth";
+import { storage } from "../utils/storage";
+import { whoAmI } from "../utils/api";
 
 export default function Signin({ navigation }: any) {
   const orySdk = newOrySdk();
@@ -15,7 +23,8 @@ export default function Signin({ navigation }: any) {
     });
   }, []);
 
-  const { setSession } = useAuth();
+  const { setSession, setSubscribed } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   return (
     <View style={[baseStyles.blackBg]}>
@@ -41,7 +50,11 @@ export default function Signin({ navigation }: any) {
             </Text>
             <Pressable
               onPress={async () => {
+                if (loading) {
+                  return;
+                }
                 try {
+                  setLoading(true);
                   let { data } = await orySdk.createNativeLoginFlow({
                     returnTo: AuthSession.makeRedirectUri({
                       preferLocalhost: true,
@@ -80,19 +93,32 @@ export default function Signin({ navigation }: any) {
                       initCode: data.session_token_exchange_code!,
                       returnToCode: code,
                     });
+                    const userData = await whoAmI(session.data.session_token!);
 
                     setSession(session.data);
-                    // refactor this code later
+                    await storage.setItem(
+                      "caster_key",
+                      JSON.stringify(session.data)
+                    );
+
+                    setLoading(false);
+                    if (userData.data) {
+                      setSubscribed(true);
+                      navigation.replace("MediaViewer");
+                      return;
+                    }
                     navigation.replace("CreatePayment");
                   }
+                  setLoading(false);
                 } catch (error) {
+                  setLoading(false);
                   console.log(error);
                 }
               }}
               style={[
                 {
                   backgroundColor: "#fff",
-                  borderRadius: 25,
+                  borderRadius: 15,
                   paddingHorizontal: 40,
                   paddingVertical: 10,
                   width: "auto",
@@ -102,24 +128,30 @@ export default function Signin({ navigation }: any) {
                 },
               ]}
             >
-              <Image
-                source={require("./../assets/google.png")}
-                style={[{ width: 30, height: 30, backgroundColor: "#fff" }]}
-              />
-
-              <Text
-                style={[
-                  baseStyles.boldText,
-                  {
-                    fontSize: 16,
-                    lineHeight: 24,
-                    color: "#000",
-                    marginLeft: 10,
-                  },
-                ]}
-              >
-                Sign in with Google
-              </Text>
+              {loading ? (
+                <ActivityIndicator color={"#000"} size={24} />
+              ) : (
+                <>
+                  {" "}
+                  <Image
+                    source={require("./../assets/google.png")}
+                    style={[{ width: 30, height: 30, backgroundColor: "#fff" }]}
+                  />
+                  <Text
+                    style={[
+                      baseStyles.boldText,
+                      {
+                        fontSize: 16,
+                        lineHeight: 24,
+                        color: "#000",
+                        marginLeft: 10,
+                      },
+                    ]}
+                  >
+                    Sign in with Google
+                  </Text>
+                </>
+              )}
             </Pressable>
           </View>
         </View>
