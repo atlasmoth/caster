@@ -1,14 +1,5 @@
 import * as React from "react";
-import {
-  FlatList,
-  StatusBar,
-  View,
-  Text,
-  RefreshControl,
-  SafeAreaView,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { FlatList, View, SafeAreaView } from "react-native";
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";

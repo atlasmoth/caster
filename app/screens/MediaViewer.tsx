@@ -4,7 +4,7 @@ import {
   FlatList,
   Dimensions,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   Text,
   SafeAreaView,
   ViewToken,
@@ -203,23 +203,23 @@ const MediaCast: React.FC = ({ navigation }: any) => {
             viewabilityConfig={viewabilityConfig}
           />
           {currentIndex > 0 && (
-            <TouchableOpacity
+            <Pressable
               style={[{ position: "absolute", zIndex: 3 }, { left: 10 }]}
               onPress={() => goToIndex(Math.max(0, currentIndex - 1))}
             >
               <FontAwesome6 name="circle-arrow-left" size={30} color="#fff" />
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           {currentIndex < mediaData.length - 1 && (
-            <TouchableOpacity
+            <Pressable
               style={[{ position: "absolute", zIndex: 3 }, { right: 10 }]}
               onPress={() =>
                 goToIndex(Math.min(currentIndex + 1, mediaData.length - 1))
               }
             >
               <FontAwesome6 name="circle-arrow-right" size={30} color="#fff" />
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           <View
@@ -276,7 +276,7 @@ const MediaCast: React.FC = ({ navigation }: any) => {
             I just finally noticed how much stingier Claude is with the response
             tokens
           </Text>
-          <TouchableOpacity
+          <Pressable
             onPress={() => {
               navigation.navigate("Comments", { id: 1234 });
             }}
@@ -289,7 +289,7 @@ const MediaCast: React.FC = ({ navigation }: any) => {
             >
               View more
             </Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <Text
             style={[baseStyles.regularText, { color: "rgba(255,255,255,0.7)" }]}

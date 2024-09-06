@@ -1,10 +1,4 @@
-import {
-  View,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Linking,
-} from "react-native";
+import { View, StyleSheet, Text, Linking } from "react-native";
 import { Image } from "expo-image";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";

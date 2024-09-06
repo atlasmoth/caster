@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { baseStyles } from "../utils/baseStyles";
 import {
   ActivityIndicator,
@@ -17,11 +17,6 @@ export default function CreatePayment({ navigation }: any) {
   const [loading, setLoading] = useState(false);
 
   const { session } = useAuth();
-  useEffect(() => {
-    WebBrowser.maybeCompleteAuthSession({
-      skipRedirectCheck: true,
-    });
-  }, []);
 
   return (
     <View style={[baseStyles.blackBg]}>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -17,11 +17,6 @@ import { whoAmI } from "../utils/api";
 
 export default function Signin({ navigation }: any) {
   const orySdk = newOrySdk();
-  useEffect(() => {
-    WebBrowser.maybeCompleteAuthSession({
-      skipRedirectCheck: true,
-    });
-  }, []);
 
   const { setSession, setSubscribed } = useAuth();
   const [loading, setLoading] = useState(false);

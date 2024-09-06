@@ -12,6 +12,7 @@ import MediaViewer from "./screens/MediaViewer";
 import Comments from "./screens/Comments";
 import { AuthProvider } from "./hooks/useAuth";
 import Loading from "./screens/Loading";
+import * as WebBrowser from "expo-web-browser";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,12 @@ const linking = {
 };
 
 export default function App() {
+  React.useEffect(() => {
+    WebBrowser.maybeCompleteAuthSession({
+      skipRedirectCheck: true,
+    });
+  }, []);
+
   const [fontsLoaded] = useFonts({
     Chirp_Bold: require("./assets/fonts/chirp_bold.otf"),
     Chirp_Regular: require("./assets/fonts/chirp_regular.otf"),

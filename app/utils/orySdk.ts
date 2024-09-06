@@ -4,7 +4,7 @@ import axios from "axios";
 export const newOrySdk = () =>
   new FrontendApi(
     new Configuration({
-      basePath: "http://localhost:4433",
+      basePath: "https://localhost:8443",
       baseOptions: {
         withCredentials: false,
         timeout: 10000,
