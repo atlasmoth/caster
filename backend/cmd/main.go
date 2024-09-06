@@ -49,11 +49,10 @@ func main() {
 	router.Use(CORSMiddleware())
 	router.GET("/users/redirect", billingController.Redirect)
 	router.POST("/users/checkout", billingController.CreateCheckoutSession)
-	router.GET("/users/validate", billingController.SubscriptionValidator)
 	router.POST("/users/subscription", billingController.CreateSubscription)
 	router.POST("/stripe/webhook", billingController.HandleStripeWebhook)
 	router.GET("/users/whoami", billingController.WhoAmI)
-	router.GET("/users/feed", feedController.GetFeed)
+	router.GET("/users/feed",billingController.SubscriptionMiddleware, feedController.GetFeed)
 	router.Run(":8084")
 }
 

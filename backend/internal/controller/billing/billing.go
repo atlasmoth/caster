@@ -30,20 +30,18 @@ func New(stripeGateway StripeGateway, models data.Models) *Controller {
 	return &Controller{stripeGateway, models}
 }
 
-type CreateSubscriptionBody struct {
-	Email string `json:"email" binding:"required"`
-}
+
 
 func (ctrl *Controller) CreateSubscription(c *gin.Context) {
 
 	email, err := ctrl.validateKratosSession(c.Request)
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
 	subscription, err := ctrl.stripeGateway.CreateSubscription(*email)
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -53,25 +51,22 @@ func (ctrl *Controller) CreateSubscription(c *gin.Context) {
 
 }
 
-type CreateCheckoutSessionBody struct {
-	SuccessURL string `json:"successUrl" form:"successUrl" binding:"required"`
-	CancelURL  string `json:"cancelUrl" form:"cancelUrl" binding:"required"`
-}
+
 
 func (ctrl *Controller) CreateCheckoutSession(c *gin.Context) {
-	body := CreateCheckoutSessionBody{}
+	body := data.CreateCheckoutSessionBody{}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
 	email, err := ctrl.validateKratosSession(c.Request)
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
 	subscription, err := ctrl.stripeGateway.CreateCheckoutSession(*email, body.SuccessURL, body.CancelURL)
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -80,38 +75,28 @@ func (ctrl *Controller) CreateCheckoutSession(c *gin.Context) {
 	})
 
 }
-func returnErrorResponse(c *gin.Context, err error) {
-	c.Status(http.StatusBadRequest)
-	c.JSON(http.StatusBadRequest, gin.H{
-		"success": false,
-		"message": err.Error(),
-	})
 
-}
 
-func (ctrl *Controller) SubscriptionValidator(c *gin.Context) {
+func (ctrl *Controller) SubscriptionMiddleware(c *gin.Context) {
 
 	email, err := ctrl.validateKratosSession(c.Request)
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
-	user, err := ctrl.models.Users.GetSubscriptionByEmail(*email)
+	_, err = ctrl.models.Users.GetSubscriptionByEmail(*email)
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    user,
-	})
+	c.Next()
 
 }
 func (ctrl *Controller) WhoAmI(c *gin.Context) {
 
 	email, err := ctrl.validateKratosSession(c.Request)
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
 	user, _ := ctrl.models.Users.GetSubscriptionByEmail(*email)
@@ -135,14 +120,14 @@ func (ctrl *Controller) HandleStripeWebhook(c *gin.Context) {
 
 	b, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
 
 	event, err := webhook.ConstructEvent(b, c.GetHeader("Stripe-Signature"), os.Getenv("STRIPE_WEBHOOK_SECRET"))
 
 	if err != nil {
-		returnErrorResponse(c, err)
+		data.ReturnErrorResponse(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"received": true})
@@ -181,13 +166,7 @@ func (ctrl *Controller) HandleStripeWebhook(c *gin.Context) {
 
 }
 
-type SessionResponse struct {
-	Identity struct {
-		Traits struct {
-			Email string `json:"email"`
-		} `json:"traits"`
-	} `json:"identity"`
-}
+
 
 func (ctrl *Controller) validateKratosSession(r *http.Request) (*string, error) {
 
@@ -212,7 +191,7 @@ func (ctrl *Controller) validateKratosSession(r *http.Request) (*string, error) 
 
 	defer res.Body.Close()
 
-	var sessionBody SessionResponse
+	var sessionBody data.SessionResponse
 
 	err = json.NewDecoder(res.Body).Decode(&sessionBody)
 
