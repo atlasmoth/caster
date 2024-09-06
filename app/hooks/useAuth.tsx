@@ -50,16 +50,12 @@ export const useAuth = (): AuthInterface => {
 };
 
 interface AuthProviderProps {
-  children: (values: AuthInterface) => ReactNode;
+  children: ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const values = useAuth();
-  return (
-    <authContext.Provider value={values}>
-      {children(values)}
-    </authContext.Provider>
-  );
+  return <authContext.Provider value={values}>{children}</authContext.Provider>;
 };
 
 export default function AuthConsumer(): Partial<AuthInterface> {

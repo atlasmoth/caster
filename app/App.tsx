@@ -10,8 +10,8 @@ import { makeRedirectUri } from "expo-auth-session";
 import MediaFeed from "./screens/MediaFeed";
 import Comments from "./screens/Comments";
 import { AuthProvider } from "./hooks/useAuth";
-import Loading from "./screens/Loading";
 import * as WebBrowser from "expo-web-browser";
+import Empty from "./screens/Empty";
 
 const Stack = createNativeStackNavigator();
 
@@ -40,44 +40,38 @@ export default function App() {
     Chirp_Bold: require("./assets/fonts/chirp_bold.otf"),
     Chirp_Regular: require("./assets/fonts/chirp_regular.otf"),
   });
-
+  if (!fontsLoaded) {
+    return <Empty />;
+  }
   return (
     <AuthProvider>
-      {({ loading }) => {
-        if (!fontsLoaded || loading) {
-          return <Loading />;
-        }
+      <SheetProvider>
+        <NavigationContainer linking={linking}>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Signin"
+              component={Signin}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="MediaFeed"
+              component={MediaFeed}
+              options={{ headerShown: false }}
+            />
 
-        return (
-          <SheetProvider>
-            <NavigationContainer linking={linking}>
-              <Stack.Navigator>
-                <Stack.Screen
-                  name="Signin"
-                  component={Signin}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="MediaFeed"
-                  component={MediaFeed}
-                  options={{ headerShown: false }}
-                />
-
-                <Stack.Screen
-                  name="Comments"
-                  component={Comments}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="CreatePayment"
-                  component={CreatePayment}
-                  options={{ headerShown: false }}
-                />
-              </Stack.Navigator>
-            </NavigationContainer>
-          </SheetProvider>
-        );
-      }}
+            <Stack.Screen
+              name="Comments"
+              component={Comments}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="CreatePayment"
+              component={CreatePayment}
+              options={{ headerShown: false }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SheetProvider>
     </AuthProvider>
   );
 }
