@@ -10,8 +10,9 @@ import { Feather, FontAwesome, Entypo } from "@expo/vector-icons";
 import data from "./../utils/sample.json";
 import { baseStyles } from "../utils/baseStyles";
 import { CastListItem } from "../components/CastListItem";
+import { RedirectFeed } from "../components/Redirect";
 
-export default function Comments() {
+function Comments() {
   const FlatItem = React.useCallback(({ item }: any) => {
     return <CastListItem data={item} />;
   }, []);
@@ -31,4 +32,8 @@ export default function Comments() {
       </View>
     </SafeAreaView>
   );
+}
+
+export default function RedirectComments({ ...props }) {
+  return <RedirectFeed screen={Comments} {...props} />;
 }

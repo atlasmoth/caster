@@ -14,8 +14,9 @@ import { baseStyles } from "../utils/baseStyles";
 import { useAuth } from "../hooks/useAuth";
 import { storage } from "../utils/storage";
 import { whoAmI } from "../utils/api";
+import { RedirectSignin } from "../components/Redirect";
 
-export default function Signin({ navigation }: any) {
+function Signin({ navigation }: any) {
   const orySdk = newOrySdk();
 
   const { setSession, setSubscribed } = useAuth();
@@ -99,7 +100,7 @@ export default function Signin({ navigation }: any) {
                     setLoading(false);
                     if (userData.data) {
                       setSubscribed(true);
-                      navigation.replace("MediaViewer");
+                      navigation.replace("MediaFeed");
                       return;
                     }
                     navigation.replace("CreatePayment");
@@ -153,4 +154,8 @@ export default function Signin({ navigation }: any) {
       </ScrollView>
     </View>
   );
+}
+
+export default function SigninWithRedirect({ ...props }) {
+  return <RedirectSignin screen={Signin} {...props} />;
 }

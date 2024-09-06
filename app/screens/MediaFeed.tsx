@@ -14,6 +14,7 @@ import { Image } from "expo-image";
 import { ResizeMode, Video } from "expo-av";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { baseStyles } from "../utils/baseStyles";
+import { RedirectFeed } from "../components/Redirect";
 
 type MediaItem = {
   type: "image" | "video";
@@ -302,4 +303,6 @@ const MediaCast: React.FC = ({ navigation }: any) => {
   );
 };
 
-export default MediaCast;
+export default function MediaCastWithRedirect({ ...props }) {
+  return <RedirectFeed screen={MediaCast} {...props} />;
+}

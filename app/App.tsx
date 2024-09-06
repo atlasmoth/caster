@@ -5,10 +5,9 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useFonts } from "expo-font";
 import { SheetProvider } from "react-native-actions-sheet";
 import Signin from "./screens/Signin";
-import SuccessPayment from "./screens/SuccessPayment";
 import CreatePayment from "./screens/CreatePayment";
 import { makeRedirectUri } from "expo-auth-session";
-import MediaViewer from "./screens/MediaViewer";
+import MediaFeed from "./screens/MediaFeed";
 import Comments from "./screens/Comments";
 import { AuthProvider } from "./hooks/useAuth";
 import Loading from "./screens/Loading";
@@ -24,8 +23,8 @@ const linking = {
     screens: {
       CreatePayment: "create_payment",
       Signin: "signin",
-      MediaViewer: "media_viewer",
-      Comments: "/:id/comments",
+      MediaFeed: "media_feed",
+      Comments: "media_feed/:id/comments",
     },
   },
 };
@@ -44,42 +43,29 @@ export default function App() {
 
   return (
     <AuthProvider>
-      {({ loading, session, subscribed }) => {
+      {({ loading }) => {
         if (!fontsLoaded || loading) {
           return <Loading />;
-        }
-        let initailRouteName = "Signin";
-
-        if (session && subscribed) {
-          initailRouteName = "MediaViewer";
-        }
-        if (session && !subscribed) {
-          initailRouteName = "CreatePayment";
         }
 
         return (
           <SheetProvider>
             <NavigationContainer linking={linking}>
-              <Stack.Navigator initialRouteName={initailRouteName}>
+              <Stack.Navigator>
                 <Stack.Screen
                   name="Signin"
                   component={Signin}
                   options={{ headerShown: false }}
                 />
                 <Stack.Screen
-                  name="MediaViewer"
-                  component={MediaViewer}
+                  name="MediaFeed"
+                  component={MediaFeed}
                   options={{ headerShown: false }}
                 />
 
                 <Stack.Screen
                   name="Comments"
                   component={Comments}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="SuccessPayment"
-                  component={SuccessPayment}
                   options={{ headerShown: false }}
                 />
                 <Stack.Screen

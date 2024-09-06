@@ -12,8 +12,9 @@ import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { useAuth } from "../hooks/useAuth";
 import { BASE_URL } from "../utils/api";
+import { RedirectSubscription } from "../components/Redirect";
 
-export default function CreatePayment({ navigation }: any) {
+function CreatePayment({ navigation }: any) {
   const [loading, setLoading] = useState(false);
 
   const { session } = useAuth();
@@ -127,4 +128,8 @@ export default function CreatePayment({ navigation }: any) {
       </ScrollView>
     </View>
   );
+}
+
+export default function PaymentWithRedirect({ ...props }) {
+  return <RedirectSubscription screen={CreatePayment} {...props} />;
 }

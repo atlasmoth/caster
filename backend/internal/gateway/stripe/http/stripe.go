@@ -75,8 +75,8 @@ func (g *Gateway) CreateCheckoutSession(email, successUrl, cancelUrl string) (*s
 		Metadata: map[string]string{
 			"user_id": email,
 		},
-		SuccessURL: stripe.String("http://localhost:8084/users/redirect?to=" + successUrl + "&session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:  stripe.String("http://localhost:8084/users/redirect?to=" + cancelUrl),
+		SuccessURL: stripe.String("https://localhost:8445/users/redirect?to=" + successUrl + "&session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:  stripe.String("https://localhost:8445/users/redirect?to=" + cancelUrl),
 	}
 	result, err := session.New(params)
 	if err != nil {
