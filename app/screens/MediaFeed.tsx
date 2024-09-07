@@ -9,12 +9,15 @@ import {
   SafeAreaView,
   ViewToken,
   useWindowDimensions,
+  ActivityIndicator,
 } from "react-native";
 import { Image } from "expo-image";
 import { ResizeMode, Video } from "expo-av";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { baseStyles } from "../utils/baseStyles";
 import { RedirectFeed } from "../components/Redirect";
+import { useFocusEffect } from "@react-navigation/native";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 type MediaItem = {
   type: "image" | "video";
@@ -28,7 +31,7 @@ const mediaData: MediaItem[] = [
   },
   {
     type: "video",
-    uri: "https://videos.pexels.com/video-files/2677752/2677752-hd_1280_720_30fps.mp4",
+    uri: "https://vz-629bcc17-285.b-cdn.net/fd3bf2f8-533a-4591-94e2-18a96aecfba6/play_720p.mp4",
   },
   {
     type: "image",
@@ -68,45 +71,92 @@ const VideoPlayer = ({
   src,
   mediaHeight,
   mediaWidth,
+  currentIndex,
+  index,
+  addVideoRef,
 }: {
   src: string;
   mediaWidth: number;
   mediaHeight: number;
+  currentIndex: number;
+  index: number;
+  addVideoRef: (ref: Video | null) => void;
 }) => {
   const video = useRef<Video>(null);
   const [status, setStatus] = useState<any>({});
 
-  const togglePlayPause = () => {
-    if (status.isPlaying) {
-      video.current?.pauseAsync();
-    } else {
-      video.current?.playAsync();
+  useEffect(() => {
+    if (video.current) {
+      if (index !== currentIndex) {
+        video.current?.setStatusAsync({ shouldPlay: false });
+      } else {
+        addVideoRef(video.current);
+        video.current?.setStatusAsync({ shouldPlay: true });
+      }
     }
-  };
+  }, [video.current, index, currentIndex]);
 
   return (
-    <View
+    <Pressable
+      onPress={async () => {
+        try {
+          if (status.isPlaying) {
+            video.current?.setStatusAsync({ shouldPlay: false });
+          } else {
+            video.current?.setStatusAsync({ shouldPlay: true });
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }}
       style={[
         {
           width: mediaWidth,
           justifyContent: "center",
           height: mediaHeight,
+          position: "relative",
         },
       ]}
     >
+      <View
+        style={[
+          {
+            position: "absolute",
+            zIndex: 20,
+            left: 0,
+            right: 0,
+            alignItems: "center",
+            top: 0,
+            bottom: 0,
+            justifyContent: "center",
+          },
+        ]}
+      >
+        {status?.isLoaded && !status?.isPlaying ? (
+          <FontAwesome5 name="play" size={50} color="rgba(255,255,255,0.9)" />
+        ) : null}
+
+        {status?.isBuffering ? (
+          <ActivityIndicator size={50} color="rgba(255,255,255,0.9)" />
+        ) : null}
+      </View>
+
       <Video
         ref={video}
+        isMuted={false}
         source={{ uri: src }}
-        style={{ flex: 1 }}
+        style={{ flexGrow: 1 }}
+        shouldPlay={true}
         isLooping
         onPlaybackStatusUpdate={setStatus}
-        resizeMode={ResizeMode.COVER}
+        resizeMode={ResizeMode.CONTAIN}
         videoStyle={{
           height: mediaHeight,
           width: mediaWidth,
+          flexGrow: 1,
         }}
       />
-    </View>
+    </Pressable>
   );
 };
 const MediaCast: React.FC = ({ navigation }: any) => {
@@ -116,7 +166,15 @@ const MediaCast: React.FC = ({ navigation }: any) => {
   const mediaHeight = height * 0.5;
   const mediaWidth = Math.min(470, width);
   const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
+  const [currentVideoRef, setCurrentVideoRef] = useState<Video | null>();
 
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        currentVideoRef?.setStatusAsync({ shouldPlay: false });
+      };
+    }, [currentVideoRef])
+  );
   const handleScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffsetX / mediaWidth);
@@ -186,7 +244,7 @@ const MediaCast: React.FC = ({ navigation }: any) => {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={handleScroll}
-            renderItem={({ item }) => {
+            renderItem={({ item, index }) => {
               return item.type === "image" ? (
                 <ImageViewer
                   src={item.uri}
@@ -195,9 +253,14 @@ const MediaCast: React.FC = ({ navigation }: any) => {
                 />
               ) : (
                 <VideoPlayer
+                  addVideoRef={(ref: Video | null) => {
+                    setCurrentVideoRef(ref);
+                  }}
                   src={item.uri}
                   mediaHeight={mediaHeight}
                   mediaWidth={mediaWidth}
+                  index={index}
+                  currentIndex={currentIndex}
                 />
               );
             }}
