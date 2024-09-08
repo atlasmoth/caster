@@ -62,6 +62,7 @@ const VideoPlayer = ({
   currentIndex,
   index,
   addVideoRef,
+  castHash,
 }: {
   src: string;
   mediaWidth: number;
@@ -69,6 +70,7 @@ const VideoPlayer = ({
   currentIndex: number;
   index: number;
   addVideoRef: (ref: Video | null) => void;
+  castHash: string;
 }) => {
   const video = useRef<Video>(null);
   const [status, setStatus] = useState<any>({});
@@ -85,13 +87,14 @@ const VideoPlayer = ({
     <Pressable
       onPress={async () => {
         try {
+          console.log("this is pressed");
           if (status.isPlaying) {
             video.current?.setStatusAsync({ shouldPlay: false });
           } else {
-            video.current?.setStatusAsync({ shouldPlay: true });
             // @ts-ignore
-            video.current.hash = "";
+            video.current.hash = castHash;
             addVideoRef(video.current);
+            video.current?.setStatusAsync({ shouldPlay: true });
           }
         } catch (error) {
           console.log(error);
@@ -253,6 +256,7 @@ const MediaCast = ({
                 mediaWidth={mediaWidth}
                 index={index}
                 currentIndex={currentIndex}
+                castHash={data.hash}
               />
             );
           }}
@@ -310,7 +314,10 @@ const MediaCast = ({
       </View>
       <View style={[{ marginHorizontal: 16, marginVertical: 10 }]}>
         <View
-          style={[{ flexDirection: "row", alignItems: "center" }, { flex: 1 }]}
+          style={[
+            { flexDirection: "row", alignItems: "center", marginVertical: 10 },
+            { flex: 1 },
+          ]}
         >
           <Feather
             name="message-circle"
@@ -416,6 +423,7 @@ const MediaFeed = ({ ...props }) => {
   useEffect(() => {
     if (currentVideoRef) {
       // @ts-ignore
+
       if (!viewableKeys.includes(currentVideoRef.hash)) {
         currentVideoRef?.setStatusAsync({ shouldPlay: false });
       }
