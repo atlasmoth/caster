@@ -41,7 +41,7 @@ jobs:
             make down
             make up
             # Wait for the containers to be fully up and running
-            while ! docker-compose  ps | grep 'Up'; do
+            while ! docker compose  ps | grep 'Up'; do
               echo "Waiting for containers to be up..."
               sleep 5
             done
