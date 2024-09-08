@@ -127,7 +127,7 @@ const VideoPlayer = ({
       >
         {status?.isLoaded && !status?.isPlaying ? (
           <FontAwesome5 name="play" size={50} color="rgba(255,255,255,0.9)" />
-        ) : status?.isBuffering ? (
+        ) : status?.isPlaying && status?.isBuffering ? (
           <ActivityIndicator size={50} color="rgba(255,255,255,0.9)" />
         ) : null}
       </View>
@@ -150,269 +150,285 @@ const VideoPlayer = ({
     </Pressable>
   );
 };
-const MediaCast = ({
-  data,
-  setCurrentVideoRef,
-}: {
-  data: Cast;
-  setCurrentVideoRef: Function;
-}) => {
-  const flatListRef = useRef<FlatList<Embed>>(null);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const { width } = useWindowDimensions();
-  const mediaWidth = Math.min(470, width);
-  const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
+const MediaCast = React.memo(
+  ({
+    data,
+    setCurrentVideoRef,
+  }: {
+    data: Cast;
+    setCurrentVideoRef: Function;
+  }) => {
+    const flatListRef = useRef<FlatList<Embed>>(null);
+    const [currentIndex, setCurrentIndex] = useState<number>(0);
+    const { width } = useWindowDimensions();
+    const mediaWidth = Math.min(470, width);
+    const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
 
-  const handleScroll = (event: any) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffsetX / mediaWidth);
-    setCurrentIndex(index);
-  };
+    const handleScroll = (event: any) => {
+      const contentOffsetX = event.nativeEvent.contentOffset.x;
+      const index = Math.round(contentOffsetX / mediaWidth);
+      setCurrentIndex(index);
+    };
 
-  const goToIndex = (index: number) => {
-    flatListRef.current?.scrollToOffset({
-      offset: index * mediaWidth,
-      animated: true,
-    });
-    setCurrentIndex(index);
-  };
-
-  return (
-    <View style={[{ width: "100%", maxWidth: mediaWidth, marginBottom: 20 }]}>
-      <Pressable
-        onPress={() => {
-          Linking.openURL(`https://warpcast.com/${data.author.username}`);
-        }}
-        style={[{ flexDirection: "row", alignItems: "center", margin: 16 }]}
-      >
-        <Image
-          source={{
-            uri: data.author.pfp_url,
-          }}
-          style={[
-            {
-              width: 32,
-              height: 32,
-              borderRadius: 32,
-              marginRight: 10,
-              flexShrink: 0,
-            },
-          ]}
-          contentFit="cover"
-        />
-        <View style={[{ flex: 1 }]}>
-          <Text
-            style={[
-              baseStyles.boldText,
-              { color: "#fff", marginBottom: 3, fontSize: 16 },
-            ]}
-          >
-            {data.author.display_name}
-          </Text>
-          <Text
-            style={[
-              baseStyles.regularText,
-              { color: "rgba(153, 153, 153,0.6)" },
-            ]}
-          >
-            @{data.author.username}
-          </Text>
-        </View>
-      </Pressable>
-      <View
-        style={[{ position: "relative", justifyContent: "center", flex: 1 }]}
-      >
-        <FlatList
-          initialScrollIndex={currentIndex}
-          contentContainerStyle={[
-            { alignItems: "center", justifyContent: "center" },
-          ]}
-          ref={flatListRef}
-          style={[{ zIndex: 1 }]}
-          keyExtractor={(item, index) => index.toString()}
-          data={data.embeds}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          renderItem={({ item, index }) => {
-            return item.metadata.content_type.startsWith("image") ? (
-              <ImageViewer
-                src={item.url}
-                mediaWidth={mediaWidth}
-                mediaHeight={
-                  (mediaWidth * item.metadata.image?.height_px!) /
-                  item.metadata.image?.width_px!
-                }
-              />
-            ) : (
-              <VideoPlayer
-                addVideoRef={(ref: Video | null) => {
-                  setCurrentVideoRef(ref);
-                }}
-                mediaHeight={
-                  (mediaWidth * item.metadata.video?.streams[0]?.height_px!) /
-                  item.metadata.video?.streams[0]?.width_px!
-                }
-                src={item.url}
-                mediaWidth={mediaWidth}
-                index={index}
-                currentIndex={currentIndex}
-                castHash={data.hash}
-              />
-            );
-          }}
-          viewabilityConfig={viewabilityConfig}
-        />
-        {currentIndex > 0 && (
-          <Pressable
-            style={[{ position: "absolute", zIndex: 3 }, { left: 10 }]}
-            onPress={() => goToIndex(currentIndex - 1)}
-          >
-            <FontAwesome6 name="circle-arrow-left" size={30} color="#fff" />
-          </Pressable>
-        )}
-
-        {currentIndex < data.embeds.length - 1 && (
-          <Pressable
-            style={[{ position: "absolute", zIndex: 3 }, { right: 10 }]}
-            onPress={() => goToIndex(currentIndex + 1)}
-          >
-            <FontAwesome6 name="circle-arrow-right" size={30} color="#fff" />
-          </Pressable>
-        )}
-
-        <View
-          style={[
-            {
-              flexDirection: "row",
-              justifyContent: "center",
-              position: "absolute",
-              zIndex: 10,
-              bottom: 20,
-              left: 0,
-              right: 0,
-            },
-          ]}
-        >
-          {data.embeds.map((t: any, index: any) => (
-            <View
-              key={index.toString()}
-              style={[
-                {
-                  backgroundColor:
-                    currentIndex === index
-                      ? "rgba(255,255,255,1)"
-                      : "rgba(255,255,255,0.6)",
-                  width: 8,
-                  height: 8,
-                  borderRadius: 8,
-                  marginRight: 2,
-                },
-              ]}
-            ></View>
-          ))}
-        </View>
-      </View>
-      <View
-        style={[
-          {
-            marginHorizontal: 16,
-            marginVertical: 10,
-            width: "100%",
-          },
-        ]}
-      >
-        <View
-          style={[
-            { flexDirection: "row", alignItems: "center", marginVertical: 10 },
-            { flex: 1 },
-          ]}
-        >
-          <Feather
-            name="message-circle"
-            size={20}
-            color={"rgba(255,255,255,0.7)"}
+    const goToIndex = (index: number) => {
+      flatListRef.current?.scrollToOffset({
+        offset: index * mediaWidth,
+        animated: true,
+      });
+      setCurrentIndex(index);
+    };
+    const renderEmbed = useCallback(
+      ({ item, index }: { item: Embed; index: number }) => {
+        return item.metadata.content_type.startsWith("image") ? (
+          <ImageViewer
+            src={item.url}
+            mediaWidth={mediaWidth}
+            mediaHeight={
+              (mediaWidth * item.metadata.image?.height_px!) /
+              item.metadata.image?.width_px!
+            }
           />
-          <Text
-            style={[
-              baseStyles.regularText,
-              { color: "#fff" },
-              { marginLeft: 3 },
-            ]}
-          >
-            {data.replies.count}
-          </Text>
-          <AntDesign
-            name="retweet"
-            size={20}
-            color={"rgba(255,255,255,0.7)"}
-            style={[{ marginLeft: 15 }]}
+        ) : (
+          <VideoPlayer
+            addVideoRef={(ref: Video | null) => {
+              setCurrentVideoRef(ref);
+            }}
+            mediaHeight={
+              (mediaWidth *
+                ((item.metadata.video?.streams || [])[0]?.height_px || 900)) /
+              ((item.metadata.video?.streams || [])[0]?.width_px || 600)
+            }
+            src={item.url}
+            mediaWidth={mediaWidth}
+            index={index}
+            currentIndex={currentIndex}
+            castHash={data.hash}
           />
-          <Text
-            style={[
-              baseStyles.regularText,
-              { color: "#fff" },
-              { marginLeft: 3 },
-            ]}
-          >
-            {data.reactions.recasts.length}
-          </Text>
-          <AntDesign
-            name="hearto"
-            size={20}
-            color={"rgba(255,255,255,0.6)"}
-            style={[{ marginLeft: 15 }]}
-          />
-          <Text
-            style={[
-              baseStyles.regularText,
-              { color: "#fff" },
-              { marginLeft: 3 },
-            ]}
-          >
-            {data.reactions.likes.length}
-          </Text>
-        </View>
-        <ProcessText text={data.text} />
+        );
+      },
+      [mediaWidth, currentIndex, data.hash, setCurrentVideoRef]
+    );
 
+    const keyExtractor = useCallback(
+      (item: Embed, index: number) => index.toString(),
+      []
+    );
+
+    return (
+      <View style={[{ width: "100%", maxWidth: mediaWidth, marginBottom: 20 }]}>
         <Pressable
           onPress={() => {
-            Linking.openURL(
-              `https://warpcast.com/${data.author.username}/${data.hash.slice(
-                0,
-                10
-              )}`
-            ).catch(console.log);
+            Linking.openURL(`https://warpcast.com/${data.author.username}`);
           }}
+          style={[{ flexDirection: "row", alignItems: "center", margin: 16 }]}
         >
-          <Text
+          <Image
+            source={{
+              uri: data.author.pfp_url,
+            }}
             style={[
-              baseStyles.regularText,
-              { color: "#0095f6", marginBottom: 10 },
+              {
+                width: 32,
+                height: 32,
+                borderRadius: 32,
+                marginRight: 10,
+                flexShrink: 0,
+              },
+            ]}
+            contentFit="cover"
+          />
+          <View style={[{ flex: 1 }]}>
+            <Text
+              style={[
+                baseStyles.boldText,
+                { color: "#fff", marginBottom: 3, fontSize: 16 },
+              ]}
+            >
+              {data.author.display_name}
+            </Text>
+            <Text
+              style={[
+                baseStyles.regularText,
+                { color: "rgba(153, 153, 153,0.6)" },
+              ]}
+            >
+              @{data.author.username}
+            </Text>
+          </View>
+        </Pressable>
+        <View
+          style={[{ position: "relative", justifyContent: "center", flex: 1 }]}
+        >
+          <FlatList
+            initialScrollIndex={currentIndex}
+            contentContainerStyle={[
+              { alignItems: "center", justifyContent: "center" },
+            ]}
+            ref={flatListRef}
+            style={[{ zIndex: 1 }]}
+            keyExtractor={keyExtractor}
+            data={data.embeds}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            renderItem={renderEmbed}
+            viewabilityConfig={viewabilityConfig}
+          />
+          {currentIndex > 0 && (
+            <Pressable
+              style={[{ position: "absolute", zIndex: 3 }, { left: 10 }]}
+              onPress={() => goToIndex(currentIndex - 1)}
+            >
+              <FontAwesome6 name="circle-arrow-left" size={30} color="#fff" />
+            </Pressable>
+          )}
+
+          {currentIndex < data.embeds.length - 1 && (
+            <Pressable
+              style={[{ position: "absolute", zIndex: 3 }, { right: 10 }]}
+              onPress={() => goToIndex(currentIndex + 1)}
+            >
+              <FontAwesome6 name="circle-arrow-right" size={30} color="#fff" />
+            </Pressable>
+          )}
+
+          <View
+            style={[
+              {
+                flexDirection: "row",
+                justifyContent: "center",
+                position: "absolute",
+                zIndex: 10,
+                bottom: 20,
+                left: 0,
+                right: 0,
+              },
             ]}
           >
-            View more
-          </Text>
-        </Pressable>
-
-        <Text
-          style={[baseStyles.regularText, { color: "rgba(255,255,255,0.7)" }]}
+            {data.embeds.map((t: any, index: any) => (
+              <View
+                key={index.toString()}
+                style={[
+                  {
+                    backgroundColor:
+                      currentIndex === index
+                        ? "rgba(255,255,255,1)"
+                        : "rgba(255,255,255,0.6)",
+                    width: 8,
+                    height: 8,
+                    borderRadius: 8,
+                    marginRight: 2,
+                  },
+                ]}
+              ></View>
+            ))}
+          </View>
+        </View>
+        <View
+          style={[
+            {
+              marginHorizontal: 16,
+              marginVertical: 10,
+              width: "100%",
+            },
+          ]}
         >
-          {new Date(data.timestamp).toLocaleDateString(undefined, {
-            weekday: "long",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            hour12: true,
-            hour: "numeric",
-            minute: "numeric",
-          })}
-        </Text>
+          <View
+            style={[
+              {
+                flexDirection: "row",
+                alignItems: "center",
+                marginVertical: 10,
+              },
+              { flex: 1 },
+            ]}
+          >
+            <Feather
+              name="message-circle"
+              size={20}
+              color={"rgba(255,255,255,0.7)"}
+            />
+            <Text
+              style={[
+                baseStyles.regularText,
+                { color: "#fff" },
+                { marginLeft: 3 },
+              ]}
+            >
+              {data.replies.count}
+            </Text>
+            <AntDesign
+              name="retweet"
+              size={20}
+              color={"rgba(255,255,255,0.7)"}
+              style={[{ marginLeft: 15 }]}
+            />
+            <Text
+              style={[
+                baseStyles.regularText,
+                { color: "#fff" },
+                { marginLeft: 3 },
+              ]}
+            >
+              {data.reactions.recasts.length}
+            </Text>
+            <AntDesign
+              name="hearto"
+              size={20}
+              color={"rgba(255,255,255,0.6)"}
+              style={[{ marginLeft: 15 }]}
+            />
+            <Text
+              style={[
+                baseStyles.regularText,
+                { color: "#fff" },
+                { marginLeft: 3 },
+              ]}
+            >
+              {data.reactions.likes.length}
+            </Text>
+          </View>
+          <ProcessText text={data.text} />
+
+          <Pressable
+            onPress={() => {
+              Linking.openURL(
+                `https://warpcast.com/${data.author.username}/${data.hash.slice(
+                  0,
+                  10
+                )}`
+              ).catch(console.log);
+            }}
+          >
+            <Text
+              style={[
+                baseStyles.regularText,
+                { color: "#0095f6", marginBottom: 10 },
+              ]}
+            >
+              View more
+            </Text>
+          </Pressable>
+
+          <Text
+            style={[baseStyles.regularText, { color: "rgba(255,255,255,0.7)" }]}
+          >
+            {new Date(data.timestamp).toLocaleDateString(undefined, {
+              weekday: "long",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour12: true,
+              hour: "numeric",
+              minute: "numeric",
+            })}
+          </Text>
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  }
+);
 
 const MediaFeed = ({ ...props }) => {
   const [casts, setCasts] = useState<Cast[]>([]);
@@ -456,6 +472,52 @@ const MediaFeed = ({ ...props }) => {
     };
   }, []);
 
+  const loadMoreCasts = useCallback(async () => {
+    if (loading) return;
+    try {
+      setLoading(true);
+      const feedResponse: FeedResponse = await getFeed(
+        session?.session_token!,
+        cursor
+      );
+      setCursor(feedResponse.next?.cursor!);
+      setCasts((prevCasts) =>
+        purgeDuplicates([
+          ...prevCasts,
+          ...feedResponse.casts.map((t) => ({
+            ...t,
+            embeds: t.embeds.filter((e) => {
+              if (e?.metadata?.content_type?.startsWith("image")) {
+                return true;
+              }
+              if (e?.metadata?.content_type?.startsWith("video")) {
+                return true;
+              }
+              return false;
+            }),
+          })),
+        ])
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, session, cursor]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Cast }) => (
+      <MediaCast
+        {...props}
+        data={item}
+        setCurrentVideoRef={setCurrentVideoRef}
+      />
+    ),
+    [props, setCurrentVideoRef]
+  );
+
+  const keyExtractor = useCallback((item: Cast) => item.hash, []);
+
   return (
     <SafeAreaView
       style={[
@@ -464,58 +526,20 @@ const MediaFeed = ({ ...props }) => {
       ]}
     >
       <FlatList
+        removeClippedSubviews={true}
         onViewableItemsChanged={onViewableItemsChanged}
         style={{ flex: 1 }}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={11}
         contentContainerStyle={{
           flexGrow: 1,
           marginHorizontal: "auto",
         }}
-        onEndReached={async () => {
-          if (loading) return;
-          try {
-            setLoading(true);
-            const feedResponse: FeedResponse = await getFeed(
-              session?.session_token!,
-              cursor
-            );
-            setCursor(feedResponse.next?.cursor!);
-            setCasts((t) =>
-              purgeDuplicates([
-                ...t,
-                ...feedResponse.casts.map((t) => ({
-                  ...t,
-                  embeds: t.embeds.filter((e) => {
-                    if (e?.metadata?.content_type?.startsWith("image")) {
-                      return true;
-                    }
-                    if (e?.metadata?.content_type?.startsWith("video")) {
-                      const firstStream = (e?.metadata?.video?.streams ||
-                        [])[0];
-                      if (firstStream?.height_px) {
-                        return true;
-                      }
-                    }
-
-                    return false;
-                  }),
-                })),
-              ])
-            );
-          } catch (error) {
-            console.log(error);
-          } finally {
-            setLoading(false);
-          }
-        }}
+        onEndReached={loadMoreCasts}
         data={casts}
-        keyExtractor={(item) => item.hash}
-        renderItem={({ item }) => (
-          <MediaCast
-            {...props}
-            data={item}
-            setCurrentVideoRef={setCurrentVideoRef}
-          />
-        )}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         scrollEnabled={true}
         nestedScrollEnabled={true}
       />
