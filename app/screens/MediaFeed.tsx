@@ -525,24 +525,26 @@ const MediaFeed = ({ ...props }) => {
         { flex: 1, paddingVertical: 20, paddingBottom: 50 },
       ]}
     >
-      <FlatList
-        removeClippedSubviews={true}
-        onViewableItemsChanged={onViewableItemsChanged}
-        style={{ flex: 1 }}
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        windowSize={11}
-        contentContainerStyle={{
-          flexGrow: 1,
-          marginHorizontal: "auto",
-        }}
-        onEndReached={loadMoreCasts}
-        data={casts}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        scrollEnabled={true}
-        nestedScrollEnabled={true}
-      />
+      {session?.session_token ? (
+        <FlatList
+          removeClippedSubviews={true}
+          onViewableItemsChanged={onViewableItemsChanged}
+          style={{ flex: 1 }}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={11}
+          contentContainerStyle={{
+            flexGrow: 1,
+            marginHorizontal: "auto",
+          }}
+          onEndReached={loadMoreCasts}
+          data={casts}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          scrollEnabled={true}
+          nestedScrollEnabled={true}
+        />
+      ) : null}
       {loading ? (
         <View
           style={{
