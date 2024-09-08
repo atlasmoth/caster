@@ -127,9 +127,7 @@ const VideoPlayer = ({
       >
         {status?.isLoaded && !status?.isPlaying ? (
           <FontAwesome5 name="play" size={50} color="rgba(255,255,255,0.9)" />
-        ) : null}
-
-        {status?.isBuffering ? (
+        ) : status?.isBuffering ? (
           <ActivityIndicator size={50} color="rgba(255,255,255,0.9)" />
         ) : null}
       </View>
