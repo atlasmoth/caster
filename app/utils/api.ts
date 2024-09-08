@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const BASE_URL = "https://capi.backpack.network";
+export const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 export const whoAmI = async (key: string) => {
   const { data } = await axios.get(`${BASE_URL}/users/whoami`, {
@@ -30,13 +30,13 @@ export const pollSubscription = async (key: string) => {
   let count = 0;
 
   while (count < 30) {
-    count++;
-    await sleep(5000);
     try {
       const userData = await whoAmI(key);
       if (userData.data) {
         return true;
       }
+      await sleep(2000);
+      count++;
     } catch (error) {
       console.log(error);
     }
