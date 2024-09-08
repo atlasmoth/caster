@@ -122,7 +122,7 @@ services:
       - "8445:445" # API port
     volumes:
       - ./ssl:/etc/nginx/ssl:ro
-      - ./etc/nginx:/etc/nginx/templates:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt/live/${DOMAIN_NAME}:/etc/letsencrypt/live/${DOMAIN_NAME}:ro
     depends_on:
       - caster_kratos
