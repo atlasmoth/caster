@@ -55,6 +55,7 @@ selfservice:
     - http://localhost:8081/signin
     - exp://localhost:8081/signin
     - exp://localhost:8081/--/signin
+    - https://caster-eta.vercel.app/signin
   flows:
     registration:
       after:
