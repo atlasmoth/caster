@@ -80,11 +80,13 @@ func (ctrl *Controller) CreateCheckoutSession(c *gin.Context) {
 func (ctrl *Controller) SubscriptionMiddleware(c *gin.Context) {
 
 	email, err := ctrl.validateKratosSession(c.Request)
+	
 	if err != nil {
 		data.ReturnErrorResponse(c, err)
 		return
 	}
 	_, err = ctrl.models.Users.GetSubscriptionByEmail(*email)
+	
 	if err != nil {
 		data.ReturnErrorResponse(c, err)
 		return

@@ -8,7 +8,6 @@ import Signin from "./screens/Signin";
 import CreatePayment from "./screens/CreatePayment";
 import { makeRedirectUri } from "expo-auth-session";
 import MediaFeed from "./screens/MediaFeed";
-import Comments from "./screens/Comments";
 import { AuthProvider } from "./hooks/useAuth";
 import * as WebBrowser from "expo-web-browser";
 import Empty from "./screens/Empty";
@@ -59,11 +58,6 @@ export default function App() {
               options={{ headerShown: false }}
             />
 
-            <Stack.Screen
-              name="Comments"
-              component={Comments}
-              options={{ headerShown: false }}
-            />
             <Stack.Screen
               name="CreatePayment"
               component={CreatePayment}

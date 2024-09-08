@@ -2,14 +2,12 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   View,
   FlatList,
-  Dimensions,
-  StyleSheet,
   Pressable,
   Text,
   SafeAreaView,
-  ViewToken,
   useWindowDimensions,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { Image } from "expo-image";
 import { ResizeMode, Video } from "expo-av";
@@ -18,26 +16,16 @@ import { baseStyles } from "../utils/baseStyles";
 import { RedirectFeed } from "../components/Redirect";
 import { useFocusEffect } from "@react-navigation/native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { getFeed } from "../utils/api";
+import { useAuth } from "../hooks/useAuth";
+import { Cast, Embed, FeedResponse } from "../utils/interfaces";
+import { purgeDuplicates } from "../utils/misc";
+import { Feather } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
+import mediaData from "./../utils/sample.json";
+import { ProcessText } from "../components/ProcessText";
 
-type MediaItem = {
-  type: "image" | "video";
-  uri: string;
-};
-
-const mediaData: MediaItem[] = [
-  {
-    type: "image",
-    uri: "https://images.unsplash.com/photo-1725261353746-fdb0052adc46?q=80&w=2835&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    type: "video",
-    uri: "https://vz-629bcc17-285.b-cdn.net/fd3bf2f8-533a-4591-94e2-18a96aecfba6/play_720p.mp4",
-  },
-  {
-    type: "image",
-    uri: "https://plus.unsplash.com/premium_photo-1719467541039-567e90c13506?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-];
+const mediaDataDedup = purgeDuplicates(mediaData as any);
 
 const ImageViewer = ({
   src,
@@ -89,9 +77,6 @@ const VideoPlayer = ({
     if (video.current) {
       if (index !== currentIndex) {
         video.current?.setStatusAsync({ shouldPlay: false });
-      } else {
-        addVideoRef(video.current);
-        video.current?.setStatusAsync({ shouldPlay: true });
       }
     }
   }, [video.current, index, currentIndex]);
@@ -104,6 +89,9 @@ const VideoPlayer = ({
             video.current?.setStatusAsync({ shouldPlay: false });
           } else {
             video.current?.setStatusAsync({ shouldPlay: true });
+            // @ts-ignore
+            video.current.hash = "";
+            addVideoRef(video.current);
           }
         } catch (error) {
           console.log(error);
@@ -146,10 +134,10 @@ const VideoPlayer = ({
         isMuted={false}
         source={{ uri: src }}
         style={{ flexGrow: 1 }}
-        shouldPlay={true}
+        shouldPlay={false}
         isLooping
         onPlaybackStatusUpdate={setStatus}
-        resizeMode={ResizeMode.CONTAIN}
+        resizeMode={ResizeMode.COVER}
         videoStyle={{
           height: mediaHeight,
           width: mediaWidth,
@@ -159,22 +147,19 @@ const VideoPlayer = ({
     </Pressable>
   );
 };
-const MediaCast: React.FC = ({ navigation }: any) => {
-  const flatListRef = useRef<FlatList<MediaItem>>(null);
+const MediaCast = ({
+  data,
+  setCurrentVideoRef,
+}: {
+  data: Cast;
+  setCurrentVideoRef: Function;
+}) => {
+  const flatListRef = useRef<FlatList<Embed>>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const { width, height } = useWindowDimensions();
-  const mediaHeight = height * 0.5;
+  const { width } = useWindowDimensions();
   const mediaWidth = Math.min(470, width);
   const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
-  const [currentVideoRef, setCurrentVideoRef] = useState<Video | null>();
 
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        currentVideoRef?.setStatusAsync({ shouldPlay: false });
-      };
-    }, [currentVideoRef])
-  );
   const handleScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffsetX / mediaWidth);
@@ -190,182 +175,328 @@ const MediaCast: React.FC = ({ navigation }: any) => {
   };
 
   return (
-    <SafeAreaView style={[baseStyles.blackBg]}>
-      <View
-        style={[{ width: "100%", maxWidth: 470, marginHorizontal: "auto" }]}
+    <View style={[{ width: "100%", maxWidth: mediaWidth }]}>
+      <Pressable
+        onPress={() => {
+          Linking.openURL(`https://warpcast.com/${data.author.username}`);
+        }}
+        style={[{ flexDirection: "row", alignItems: "center", margin: 16 }]}
       >
-        <View
+        <Image
+          source={{
+            uri: data.author.pfp_url,
+          }}
           style={[
-            { flexDirection: "row", alignItems: "center", marginVertical: 10 },
+            {
+              width: 32,
+              height: 32,
+              borderRadius: 32,
+              marginRight: 10,
+              flexShrink: 0,
+            },
           ]}
-        >
-          <Image
-            source={{
-              uri: "https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671122.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725235200&semt=ais_hybrid",
-            }}
-            style={[
-              {
-                width: 32,
-                height: 32,
-                borderRadius: 32,
-                marginRight: 10,
-                flexShrink: 0,
-              },
-            ]}
-            contentFit="cover"
-          />
-          <View style={[{ flex: 1 }]}>
-            <Text
-              style={[
-                baseStyles.boldText,
-                { color: "#fff", marginBottom: 3, fontSize: 16 },
-              ]}
-            >
-              Jason Goldberg
-            </Text>
-            <Text
-              style={[
-                baseStyles.regularText,
-                { color: "rgba(153, 153, 153,0.6)" },
-              ]}
-            >
-              @betashop.eth
-            </Text>
-          </View>
-        </View>
-        <View style={[{ position: "relative", justifyContent: "center" }]}>
-          <FlatList
-            initialScrollIndex={currentIndex}
-            ref={flatListRef}
-            style={[{ zIndex: 1 }]}
-            keyExtractor={(_, index) => index.toString()}
-            data={mediaData}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={handleScroll}
-            renderItem={({ item, index }) => {
-              return item.type === "image" ? (
-                <ImageViewer
-                  src={item.uri}
-                  mediaHeight={mediaHeight}
-                  mediaWidth={mediaWidth}
-                />
-              ) : (
-                <VideoPlayer
-                  addVideoRef={(ref: Video | null) => {
-                    setCurrentVideoRef(ref);
-                  }}
-                  src={item.uri}
-                  mediaHeight={mediaHeight}
-                  mediaWidth={mediaWidth}
-                  index={index}
-                  currentIndex={currentIndex}
-                />
-              );
-            }}
-            viewabilityConfig={viewabilityConfig}
-          />
-          {currentIndex > 0 && (
-            <Pressable
-              style={[{ position: "absolute", zIndex: 3 }, { left: 10 }]}
-              onPress={() => goToIndex(Math.max(0, currentIndex - 1))}
-            >
-              <FontAwesome6 name="circle-arrow-left" size={30} color="#fff" />
-            </Pressable>
-          )}
-
-          {currentIndex < mediaData.length - 1 && (
-            <Pressable
-              style={[{ position: "absolute", zIndex: 3 }, { right: 10 }]}
-              onPress={() =>
-                goToIndex(Math.min(currentIndex + 1, mediaData.length - 1))
-              }
-            >
-              <FontAwesome6 name="circle-arrow-right" size={30} color="#fff" />
-            </Pressable>
-          )}
-
-          <View
-            style={[
-              {
-                flexDirection: "row",
-                justifyContent: "center",
-                position: "absolute",
-                zIndex: 10,
-                bottom: 20,
-                left: 0,
-                right: 0,
-              },
-            ]}
-          >
-            {mediaData.map((t, index) => (
-              <View
-                key={index.toString()}
-                style={[
-                  {
-                    backgroundColor:
-                      currentIndex === index
-                        ? "rgba(255,255,255,1)"
-                        : "rgba(255,255,255,0.6)",
-                    width: 8,
-                    height: 8,
-                    borderRadius: 8,
-                    marginRight: 2,
-                  },
-                ]}
-              ></View>
-            ))}
-          </View>
-        </View>
-        <View style={[{ marginHorizontal: 16, marginVertical: 10 }]}>
+          contentFit="cover"
+        />
+        <View style={[{ flex: 1 }]}>
           <Text
-            style={[baseStyles.boldText, { color: "#fff", fontWeight: "700" }]}
+            style={[
+              baseStyles.boldText,
+              { color: "#fff", marginBottom: 3, fontSize: 16 },
+            ]}
           >
-            312 likes
+            {data.author.display_name}
           </Text>
           <Text
             style={[
               baseStyles.regularText,
-              {
-                marginVertical: 10,
-                color: "#fff",
-                fontSize: 15,
-                lineHeight: 20,
-              },
+              { color: "rgba(153, 153, 153,0.6)" },
             ]}
           >
-            I’ve been using it for a however long it’s been out now. In cursor
-            their both side by side so I switch whenever it’s relevant, I guess
-            I just finally noticed how much stingier Claude is with the response
-            tokens
-          </Text>
-          <Pressable
-            onPress={() => {
-              navigation.navigate("Comments", { id: 1234 });
-            }}
-          >
-            <Text
-              style={[
-                baseStyles.regularText,
-                { color: "#0095f6", marginBottom: 10 },
-              ]}
-            >
-              View more
-            </Text>
-          </Pressable>
-
-          <Text
-            style={[baseStyles.regularText, { color: "rgba(255,255,255,0.7)" }]}
-          >
-            March 31
+            @{data.author.username}
           </Text>
         </View>
+      </Pressable>
+      <View
+        style={[{ position: "relative", justifyContent: "center", flex: 1 }]}
+      >
+        <FlatList
+          initialScrollIndex={currentIndex}
+          contentContainerStyle={[{ alignItems: "center" }]}
+          ref={flatListRef}
+          style={[{ zIndex: 1 }]}
+          keyExtractor={(item, index) => index.toString()}
+          data={data.embeds}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          renderItem={({ item, index }) => {
+            return item.metadata.content_type.startsWith("image") ? (
+              <ImageViewer
+                src={item.url}
+                mediaWidth={mediaWidth}
+                mediaHeight={
+                  (mediaWidth * item.metadata.image?.height_px!) /
+                  item.metadata.image?.width_px!
+                }
+              />
+            ) : (
+              <VideoPlayer
+                addVideoRef={(ref: Video | null) => {
+                  setCurrentVideoRef(ref);
+                }}
+                mediaHeight={
+                  (mediaWidth * item.metadata.video?.streams[0]?.height_px!) /
+                  item.metadata.video?.streams[0]?.width_px!
+                }
+                src={item.url}
+                mediaWidth={mediaWidth}
+                index={index}
+                currentIndex={currentIndex}
+              />
+            );
+          }}
+          viewabilityConfig={viewabilityConfig}
+        />
+        {currentIndex > 0 && (
+          <Pressable
+            style={[{ position: "absolute", zIndex: 3 }, { left: 10 }]}
+            onPress={() => goToIndex(currentIndex - 1)}
+          >
+            <FontAwesome6 name="circle-arrow-left" size={30} color="#fff" />
+          </Pressable>
+        )}
+
+        {currentIndex < data.embeds.length - 1 && (
+          <Pressable
+            style={[{ position: "absolute", zIndex: 3 }, { right: 10 }]}
+            onPress={() => goToIndex(currentIndex + 1)}
+          >
+            <FontAwesome6 name="circle-arrow-right" size={30} color="#fff" />
+          </Pressable>
+        )}
+
+        <View
+          style={[
+            {
+              flexDirection: "row",
+              justifyContent: "center",
+              position: "absolute",
+              zIndex: 10,
+              bottom: 20,
+              left: 0,
+              right: 0,
+            },
+          ]}
+        >
+          {data.embeds.map((t: any, index: any) => (
+            <View
+              key={index.toString()}
+              style={[
+                {
+                  backgroundColor:
+                    currentIndex === index
+                      ? "rgba(255,255,255,1)"
+                      : "rgba(255,255,255,0.6)",
+                  width: 8,
+                  height: 8,
+                  borderRadius: 8,
+                  marginRight: 2,
+                },
+              ]}
+            ></View>
+          ))}
+        </View>
       </View>
-    </SafeAreaView>
+      <View style={[{ marginHorizontal: 16, marginVertical: 10 }]}>
+        <View
+          style={[{ flexDirection: "row", alignItems: "center" }, { flex: 1 }]}
+        >
+          <Feather
+            name="message-circle"
+            size={20}
+            color={"rgba(255,255,255,0.7)"}
+          />
+          <Text
+            style={[
+              baseStyles.regularText,
+              { color: "#fff" },
+              { marginLeft: 3 },
+            ]}
+          >
+            {data.replies.count}
+          </Text>
+          <AntDesign
+            name="retweet"
+            size={20}
+            color={"rgba(255,255,255,0.7)"}
+            style={[{ marginLeft: 15 }]}
+          />
+          <Text
+            style={[
+              baseStyles.regularText,
+              { color: "#fff" },
+              { marginLeft: 3 },
+            ]}
+          >
+            {data.reactions.recasts.length}
+          </Text>
+          <AntDesign
+            name="hearto"
+            size={20}
+            color={"rgba(255,255,255,0.6)"}
+            style={[{ marginLeft: 15 }]}
+          />
+          <Text
+            style={[
+              baseStyles.regularText,
+              { color: "#fff" },
+              { marginLeft: 3 },
+            ]}
+          >
+            {data.reactions.likes.length}
+          </Text>
+        </View>
+        <ProcessText text={data.text} />
+
+        <Pressable
+          onPress={() => {
+            Linking.openURL(
+              `https://warpcast.com/${data.author.username}/${data.hash.slice(
+                0,
+                10
+              )}`
+            ).catch(console.log);
+          }}
+        >
+          <Text
+            style={[
+              baseStyles.regularText,
+              { color: "#0095f6", marginBottom: 10 },
+            ]}
+          >
+            View more
+          </Text>
+        </Pressable>
+
+        <Text
+          style={[baseStyles.regularText, { color: "rgba(255,255,255,0.7)" }]}
+        >
+          {new Date(data.timestamp).toLocaleDateString(undefined, {
+            weekday: "long",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour12: true,
+            hour: "numeric",
+            minute: "numeric",
+          })}
+        </Text>
+      </View>
+    </View>
   );
 };
 
-export default function MediaCastWithRedirect({ ...props }) {
-  return <RedirectFeed screen={MediaCast} {...props} />;
+const MediaFeed = ({ ...props }) => {
+  const [casts, setCasts] = useState<Cast[]>([...mediaDataDedup]);
+  const [loading, setLoading] = useState(false);
+  const [cursor, setCursor] = useState("");
+  const { session } = useAuth();
+  const [currentVideoRef, setCurrentVideoRef] = useState<Video | null>();
+  const [viewableKeys, setViewableKeys] = useState([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        currentVideoRef?.setStatusAsync({ shouldPlay: false });
+      };
+    }, [currentVideoRef])
+  );
+
+  useEffect(() => {
+    if (currentVideoRef) {
+      // @ts-ignore
+      if (!viewableKeys.includes(currentVideoRef.hash)) {
+        currentVideoRef?.setStatusAsync({ shouldPlay: false });
+      }
+    }
+  }, [viewableKeys, currentVideoRef]);
+
+  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+    const keys = viewableItems.map((t: any) => t.key);
+    setViewableKeys(keys);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      setCasts([]);
+    };
+  }, []);
+
+  return (
+    <SafeAreaView style={[baseStyles.blackBg, { flex: 1 }]}>
+      <FlatList
+        onViewableItemsChanged={onViewableItemsChanged}
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          alignItems: "center",
+        }}
+        onEndReached={async () => {
+          if (loading) return;
+          try {
+            setLoading(true);
+            const feedResponse: FeedResponse = await getFeed(
+              session?.session_token!,
+              cursor
+            );
+            setCursor(feedResponse.next?.cursor!);
+            setCasts((t) =>
+              purgeDuplicates([
+                ...t,
+                ...feedResponse.casts.map((t) => ({
+                  ...t,
+                  embeds: t.embeds.filter(
+                    (e) =>
+                      e?.metadata?.content_type?.startsWith("image") ||
+                      (e?.metadata?.content_type?.startsWith("video") &&
+                        e?.metadata?.video?.streams[0]?.height_px)
+                  ),
+                })),
+              ])
+            );
+          } catch (error) {
+            console.log(error);
+          } finally {
+            setLoading(false);
+          }
+        }}
+        data={casts}
+        keyExtractor={(item) => item.hash}
+        renderItem={({ item }) => (
+          <MediaCast
+            {...props}
+            data={item}
+            setCurrentVideoRef={setCurrentVideoRef}
+          />
+        )}
+        scrollEnabled={true}
+        nestedScrollEnabled={true}
+      />
+      {loading ? (
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            paddingVertical: 25,
+          }}
+        >
+          <ActivityIndicator size={40} color={"#fff"} />
+        </View>
+      ) : null}
+    </SafeAreaView>
+  );
+};
+export default function MediaFeedWithRedirect({ ...props }) {
+  return <RedirectFeed screen={MediaFeed} {...props} />;
 }

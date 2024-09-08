@@ -22,7 +22,7 @@ func New(apiKey *string, neynarClient *neynarv2.APIClient) *Controller {
 
 func (ctrl *Controller) GetFeed(c *gin.Context) {
 	cursor := c.Query("cursor")
-	feed, _, err := ctrl.neynarClient.FeedApi.Feed(context.Background(),*ctrl.apiKey,neynarv2.FILTER_FeedType,&neynarv2.FeedApiFeedOpts{EmbedTypes: optional.NewInterface("image,video") , Cursor: optional.NewString(cursor),FilterType:  optional.NewInterface("embed_type")})
+	feed, _, err := ctrl.neynarClient.FeedApi.Feed(context.Background(),*ctrl.apiKey,neynarv2.FILTER_FeedType,&neynarv2.FeedApiFeedOpts{EmbedTypes: optional.NewInterface("image,video") , Cursor: optional.NewString(cursor),FilterType:  optional.NewInterface("embed_types"), Limit:  optional.NewInt32(100)})
 	
 	if err != nil {
 		data.ReturnErrorResponse(c, err)
