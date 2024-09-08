@@ -1,7 +1,7 @@
 # Makefile for managing Docker Compose services
 
 # Variables
-DC = docker-compose
+DC = docker compose
 COMPOSE_FILE = docker_compose.yml
 
 # Default target
