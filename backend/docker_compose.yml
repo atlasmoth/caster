@@ -121,7 +121,7 @@ services:
       - "8444:444" # Kratos admin port
       - "8445:445" # API port
     volumes:
-      - ./ssl:/etc/nginx/ssl:ro
+      - ./ssl:/etc/self/ssl:ro
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt/:ro
       - /etc/nginx/ssl/:/etc/nginx/ssl/:ro
