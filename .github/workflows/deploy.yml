@@ -25,7 +25,7 @@ jobs:
           host: ${{ secrets.STAGING_HOST }}
           username: root
           password: ${{ secrets.SSH_STAGING_PASSWORD }}
-          source: "./backend/."
+          source: "./backend/*"
           target: "/root/sample"
 
       # - name: Deploy to DigitalOcean
