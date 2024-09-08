@@ -1,11 +1,15 @@
 package http
 
 import (
+	"os"
+
 	"github.com/stripe/stripe-go/v79"
 	"github.com/stripe/stripe-go/v79/checkout/session"
 	"github.com/stripe/stripe-go/v79/customer"
 	"github.com/stripe/stripe-go/v79/subscription"
 )
+
+var BASE_URL = os.Getenv("BASE_URL")
 
 type Gateway struct {
 }
@@ -75,8 +79,8 @@ func (g *Gateway) CreateCheckoutSession(email, successUrl, cancelUrl string) (*s
 		Metadata: map[string]string{
 			"user_id": email,
 		},
-		SuccessURL: stripe.String("https://localhost:8445/users/redirect?to=" + successUrl + "&session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:  stripe.String("https://localhost:8445/users/redirect?to=" + cancelUrl),
+		SuccessURL: stripe.String(BASE_URL + "/users/redirect?to=" + successUrl + "&session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:  stripe.String(BASE_URL + "/users/redirect?to=" + cancelUrl),
 	}
 	result, err := session.New(params)
 	if err != nil {

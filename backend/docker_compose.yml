@@ -38,6 +38,7 @@ services:
       - SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS=${SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS}
       - SECRETS_CIPHER=${SECRETS_CIPHER}
       - SECRETS_COOKIE=${SECRETS_COOKIE}
+      - SERVE_PUBLIC_BASE_URL=${SERVE_PUBLIC_BASE_URL}
     volumes:
       - type: bind
         source: ./kratos
@@ -60,11 +61,12 @@ services:
     env_file: ./.env
     environment:
       - DSN=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@kratos_postgres:5432/${DATABASE_NAME}?sslmode=disable
-      - LOG_LEVEL=trace
+      - LOG_LEVEL=info
       - SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS=${SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS}
       - SECRETS_CIPHER=${SECRETS_CIPHER}
       - SECRETS_COOKIE=${SECRETS_COOKIE}
-    command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+      - SERVE_PUBLIC_BASE_URL=${SERVE_PUBLIC_BASE_URL}
+    command: serve -c /etc/config/kratos/kratos.yml
     volumes:
       - type: bind
         source: ./kratos
@@ -88,6 +90,7 @@ services:
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - STRIPE_API_KEY=${STRIPE_API_KEY}
       - NEYNAR_API_KEY=${NEYNAR_API_KEY}
+      - BASE_URL=${BASE_URL}
     networks:
       - caster
 

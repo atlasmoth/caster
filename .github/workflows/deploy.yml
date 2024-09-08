@@ -30,19 +30,19 @@ jobs:
           target: "/root/sample"
           strip_components: 1
 
-      # - name: Deploy to DigitalOcean
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.STAGING_HOST }}
-      #     username: root
-      #     password: ${{ secrets.SSH_STAGING_PASSWORD }}
-      #     script: |
-      #       cd /root/caster
-      #       docker-compose -f dev-docker-compose.yml down
-      #       docker-compose -f dev-docker-compose.yml up --build -d
-      #       # Wait for the containers to be fully up and running
-      #       while ! docker-compose -f dev-docker-compose.yml ps | grep 'Up'; do
-      #         echo "Waiting for containers to be up..."
-      #         sleep 5
-      #       done
-      #       echo "Containers are up and running!"
+      - name: Deploy to DigitalOcean
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: root
+          password: ${{ secrets.SSH_STAGING_PASSWORD }}
+          script: |
+            cd /root/sample
+            make down
+            make up
+            # Wait for the containers to be fully up and running
+            while ! docker-compose  ps | grep 'Up'; do
+              echo "Waiting for containers to be up..."
+              sleep 5
+            done
+            echo "Containers are up and running!"

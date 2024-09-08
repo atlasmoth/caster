@@ -2,7 +2,6 @@ version: v0.13.0
 
 serve:
   public:
-    base_url: https://localhost:8443/
     cors:
       enabled: true
       allowed_origins:
@@ -30,7 +29,7 @@ serve:
         - Set-Cookie
       allow_credentials: true
   admin:
-    base_url: http://caster_kratos:4434/
+    base_url: http://caster_kratos:4434
 
 selfservice:
   methods:
@@ -67,7 +66,7 @@ selfservice:
 log:
   level: debug
   format: json
-  leak_sensitive_values: true
+  leak_sensitive_values: false
 
 ciphers:
   algorithm: xchacha20-poly1305
@@ -76,7 +75,7 @@ session:
 hashers:
   algorithm: bcrypt
   bcrypt:
-    cost: 8
+    cost: 10
 
 identity:
   default_schema_id: default
