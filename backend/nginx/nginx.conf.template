@@ -15,13 +15,18 @@ http {
         server api:8084;
     }
 
-    
-
-    # Server block for the default setup using local certificates
     server {
-        listen 8444 ssl;
-        ssl_certificate /etc/nginx/ssl/self-signed.crt;
-        ssl_certificate_key /etc/nginx/ssl/self-signed.key;
+        listen 8443 ssl;
+        server_name ${DOMAIN_NAME};
+
+        # Use Certbot's generated certificates
+        ssl_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
+        ssl_trusted_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/chain.pem;
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers on;
+        ssl_dhparam /etc/nginx/ssl/dhparam.pem;
 
         location / {
             proxy_pass http://kratos_public;
@@ -31,6 +36,8 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
     }
+
+  
 
     # Server for kratos_admin
     server {
