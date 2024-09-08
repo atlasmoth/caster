@@ -3,6 +3,7 @@ import { baseStyles } from "../utils/baseStyles";
 import {
   ActivityIndicator,
   Pressable,
+  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -11,16 +12,16 @@ import axios from "axios";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { useAuth } from "../hooks/useAuth";
-import { BASE_URL } from "../utils/api";
+import { BASE_URL, pollSubscription } from "../utils/api";
 import { RedirectSubscription } from "../components/Redirect";
 
 function CreatePayment({ navigation }: any) {
   const [loading, setLoading] = useState(false);
 
-  const { session } = useAuth();
+  const { session, setSubscribed } = useAuth();
 
   return (
-    <View style={[baseStyles.blackBg]}>
+    <SafeAreaView style={[baseStyles.blackBg]}>
       <ScrollView
         style={[baseStyles.container]}
         contentContainerStyle={{ flex: 1 }}
@@ -86,8 +87,16 @@ function CreatePayment({ navigation }: any) {
                     res.data.data.url,
                     redirectUri
                   );
+                  if (result.type === "success") {
+                    const hasSubscibed = await pollSubscription(
+                      session?.session_token!
+                    );
+                    setSubscribed(hasSubscibed);
+                    if (hasSubscibed) {
+                      navigation.replace("MediaFeed");
+                    }
+                  }
 
-                  console.log({ result });
                   setLoading(false);
                 } catch (error) {
                   setLoading(false);
@@ -126,7 +135,7 @@ function CreatePayment({ navigation }: any) {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

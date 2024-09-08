@@ -25,3 +25,26 @@ export const getFeed = async (key: string, cursor: string) => {
   });
   return data.data;
 };
+
+export const pollSubscription = async (key: string) => {
+  let count = 0;
+
+  while (count < 30) {
+    count++;
+    await sleep(50000);
+    try {
+      const userData = await whoAmI(key);
+      if (userData.data) {
+        return true;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  return false;
+};
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

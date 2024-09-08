@@ -23,7 +23,6 @@ const linking = {
       CreatePayment: "create_payment",
       Signin: "signin",
       MediaFeed: "media_feed",
-      Comments: "media_feed/:id/comments",
     },
   },
 };

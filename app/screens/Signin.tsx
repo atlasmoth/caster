@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -23,7 +24,7 @@ function Signin({ navigation }: any) {
   const [loading, setLoading] = useState(false);
 
   return (
-    <View style={[baseStyles.blackBg]}>
+    <SafeAreaView style={[baseStyles.blackBg]}>
       <ScrollView
         style={[baseStyles.container]}
         contentContainerStyle={{ flex: 1 }}
@@ -37,8 +38,7 @@ function Signin({ navigation }: any) {
                   fontSize: 24,
                   lineHeight: 36,
                   color: "#fff",
-                  textAlign: "center",
-                  marginBottom: 40,
+                  marginBottom: 20,
                 },
               ]}
             >
@@ -54,10 +54,12 @@ function Signin({ navigation }: any) {
                   let { data } = await orySdk.createNativeLoginFlow({
                     returnTo: AuthSession.makeRedirectUri({
                       preferLocalhost: true,
-                      path: "/Signin",
+                      path: "/signin",
                     }),
                     returnSessionTokenExchangeCode: true,
                   });
+
+                  console.log("Getting here!");
 
                   let link = "";
                   try {
@@ -78,7 +80,7 @@ function Signin({ navigation }: any) {
                     link,
                     AuthSession.makeRedirectUri({
                       preferLocalhost: true,
-                      path: "/Signin",
+                      path: "/signin",
                       scheme: "atlasmoth_caster",
                     })
                   );
@@ -128,10 +130,9 @@ function Signin({ navigation }: any) {
                 <ActivityIndicator color={"#000"} size={24} />
               ) : (
                 <>
-                  {" "}
                   <Image
                     source={require("./../assets/google.png")}
-                    style={[{ width: 30, height: 30, backgroundColor: "#fff" }]}
+                    style={[{ width: 30, height: 30 }]}
                   />
                   <Text
                     style={[
@@ -152,7 +153,7 @@ function Signin({ navigation }: any) {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
