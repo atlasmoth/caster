@@ -123,7 +123,7 @@ services:
     volumes:
       - ./ssl:/etc/nginx/ssl:ro
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt/live/${DOMAIN_NAME}:/etc/letsencrypt/live/${DOMAIN_NAME}:ro
+      - /etc/letsencrypt/live/kratos.backpack.network:/etc/letsencrypt/live/kratos.backpack.network:ro
     depends_on:
       - caster_kratos
       - api
