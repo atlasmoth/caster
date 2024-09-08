@@ -40,9 +40,17 @@ jobs:
             cd /root/sample
             make down
             make up
-            # Wait for the containers to be fully up and running
-            while ! docker compose  ps | grep 'Up'; do
-              echo "Waiting for containers to be up..."
-              sleep 5
+            max_attempts=30
+            attempt=0
+            while [ $attempt -lt $max_attempts ]; do
+              if docker ps --filter "status=running" --format "table {{.Names}}\t{{.Status}}" | grep "(healthy)"; then
+                echo "All containers are up and healthy!"
+                exit 0
+              else
+                echo "Waiting for containers to be up and healthy... (Attempt $((attempt+1))/$max_attempts)"
+                sleep 10
+                attempt=$((attempt+1))
+              fi
             done
-            echo "Containers are up and running!"
+            echo "Deployment failed: Containers did not become healthy within the allocated time."
+            exit 1
