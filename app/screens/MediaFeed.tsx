@@ -22,10 +22,7 @@ import { Cast, Embed, FeedResponse } from "../utils/interfaces";
 import { purgeDuplicates } from "../utils/misc";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import mediaData from "./../utils/sample.json";
 import { ProcessText } from "../components/ProcessText";
-
-const mediaDataDedup = purgeDuplicates(mediaData as any);
 
 const ImageViewer = ({
   src,
@@ -78,7 +75,9 @@ const VideoPlayer = ({
   useEffect(() => {
     if (video.current) {
       if (index !== currentIndex) {
-        video.current?.setStatusAsync({ shouldPlay: false });
+        video.current
+          ?.setStatusAsync({ shouldPlay: false })
+          ?.catch(console.log);
       }
     }
   }, [video.current, index, currentIndex]);
@@ -87,14 +86,17 @@ const VideoPlayer = ({
     <Pressable
       onPress={async () => {
         try {
-          console.log("this is pressed");
           if (status.isPlaying) {
-            video.current?.setStatusAsync({ shouldPlay: false });
+            video.current
+              ?.setStatusAsync({ shouldPlay: false })
+              ?.catch(console.log);
           } else {
             // @ts-ignore
             video.current.hash = castHash;
             addVideoRef(video.current);
-            video.current?.setStatusAsync({ shouldPlay: true });
+            video.current
+              ?.setStatusAsync({ shouldPlay: true })
+              ?.catch(console.log);
           }
         } catch (error) {
           console.log(error);
@@ -178,7 +180,7 @@ const MediaCast = ({
   };
 
   return (
-    <View style={[{ width: "100%", maxWidth: mediaWidth }]}>
+    <View style={[{ width: "100%", maxWidth: mediaWidth, marginBottom: 20 }]}>
       <Pressable
         onPress={() => {
           Linking.openURL(`https://warpcast.com/${data.author.username}`);
@@ -224,7 +226,9 @@ const MediaCast = ({
       >
         <FlatList
           initialScrollIndex={currentIndex}
-          contentContainerStyle={[{ alignItems: "center" }]}
+          contentContainerStyle={[
+            { alignItems: "center", justifyContent: "center" },
+          ]}
           ref={flatListRef}
           style={[{ zIndex: 1 }]}
           keyExtractor={(item, index) => index.toString()}
@@ -312,7 +316,15 @@ const MediaCast = ({
           ))}
         </View>
       </View>
-      <View style={[{ marginHorizontal: 16, marginVertical: 10 }]}>
+      <View
+        style={[
+          {
+            marginHorizontal: 16,
+            marginVertical: 10,
+            width: "100%",
+          },
+        ]}
+      >
         <View
           style={[
             { flexDirection: "row", alignItems: "center", marginVertical: 10 },
@@ -405,7 +417,7 @@ const MediaCast = ({
 };
 
 const MediaFeed = ({ ...props }) => {
-  const [casts, setCasts] = useState<Cast[]>([...mediaDataDedup]);
+  const [casts, setCasts] = useState<Cast[]>([]);
   const [loading, setLoading] = useState(false);
   const [cursor, setCursor] = useState("");
   const { session } = useAuth();
@@ -415,7 +427,9 @@ const MediaFeed = ({ ...props }) => {
   useFocusEffect(
     React.useCallback(() => {
       return () => {
-        currentVideoRef?.setStatusAsync({ shouldPlay: false });
+        currentVideoRef
+          ?.setStatusAsync({ shouldPlay: false })
+          ?.catch(console.log);
       };
     }, [currentVideoRef])
   );
@@ -425,7 +439,9 @@ const MediaFeed = ({ ...props }) => {
       // @ts-ignore
 
       if (!viewableKeys.includes(currentVideoRef.hash)) {
-        currentVideoRef?.setStatusAsync({ shouldPlay: false });
+        currentVideoRef
+          ?.setStatusAsync({ shouldPlay: false })
+          ?.catch(console.log);
       }
     }
   }, [viewableKeys, currentVideoRef]);
@@ -437,18 +453,24 @@ const MediaFeed = ({ ...props }) => {
 
   useEffect(() => {
     return () => {
+      setCursor("");
       setCasts([]);
     };
   }, []);
 
   return (
-    <SafeAreaView style={[baseStyles.blackBg, { flex: 1 }]}>
+    <SafeAreaView
+      style={[
+        baseStyles.blackBg,
+        { flex: 1, paddingVertical: 20, paddingBottom: 50 },
+      ]}
+    >
       <FlatList
         onViewableItemsChanged={onViewableItemsChanged}
         style={{ flex: 1 }}
         contentContainerStyle={{
           flexGrow: 1,
-          alignItems: "center",
+          marginHorizontal: "auto",
         }}
         onEndReached={async () => {
           if (loading) return;
@@ -464,12 +486,20 @@ const MediaFeed = ({ ...props }) => {
                 ...t,
                 ...feedResponse.casts.map((t) => ({
                   ...t,
-                  embeds: t.embeds.filter(
-                    (e) =>
-                      e?.metadata?.content_type?.startsWith("image") ||
-                      (e?.metadata?.content_type?.startsWith("video") &&
-                        e?.metadata?.video?.streams[0]?.height_px)
-                  ),
+                  embeds: t.embeds.filter((e) => {
+                    if (e?.metadata?.content_type?.startsWith("image")) {
+                      return true;
+                    }
+                    if (e?.metadata?.content_type?.startsWith("video")) {
+                      const firstStream = (e?.metadata?.video?.streams ||
+                        [])[0];
+                      if (firstStream?.height_px) {
+                        return true;
+                      }
+                    }
+
+                    return false;
+                  }),
                 })),
               ])
             );

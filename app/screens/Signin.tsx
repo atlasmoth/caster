@@ -59,8 +59,6 @@ function Signin({ navigation }: any) {
                     returnSessionTokenExchangeCode: true,
                   });
 
-                  console.log("Getting here!");
-
                   let link = "";
                   try {
                     await orySdk.updateLoginFlow({
