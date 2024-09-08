@@ -117,7 +117,6 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "443:443"
       - "8443:443" # Kratos public port
       - "8444:444" # Kratos admin port
       - "8445:445" # API port
