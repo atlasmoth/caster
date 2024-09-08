@@ -31,7 +31,7 @@ export const pollSubscription = async (key: string) => {
 
   while (count < 30) {
     count++;
-    await sleep(50000);
+    await sleep(5000);
     try {
       const userData = await whoAmI(key);
       if (userData.data) {
