@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -16,12 +16,52 @@ import { useAuth } from "../hooks/useAuth";
 import { storage } from "../utils/storage";
 import { whoAmI } from "../utils/api";
 import { RedirectSignin } from "../components/Redirect";
+import { LoginFlow } from "@ory/client";
 
+const redirectUri = AuthSession.makeRedirectUri({
+  preferLocalhost: true,
+  path: "/signin",
+  scheme: "atlasmoth_caster",
+});
 function Signin({ navigation }: any) {
   const orySdk = newOrySdk();
 
   const { setSession, setSubscribed } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [link, setLink] = useState("");
+  const [flow, setFlow] = useState<LoginFlow | null>(null);
+
+  useEffect(() => {
+    async function getFlow() {
+      setLoading(true);
+      let { data } = await orySdk.createNativeLoginFlow({
+        returnTo: redirectUri,
+        returnSessionTokenExchangeCode: true,
+      });
+
+      let url = "";
+      try {
+        await orySdk.updateLoginFlow({
+          flow: data.id,
+          updateLoginFlowBody: {
+            method: "oidc",
+            provider: "google",
+          },
+        });
+      } catch (error: any) {
+        if (error?.response?.data?.redirect_browser_to) {
+          url = error?.response?.data?.redirect_browser_to;
+        }
+      }
+      setFlow(data);
+      setLink(url);
+    }
+    getFlow()
+      .catch(console.log)
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [setLoading, setLink, setFlow]);
 
   return (
     <SafeAreaView style={[baseStyles.blackBg]}>
@@ -51,42 +91,15 @@ function Signin({ navigation }: any) {
                 }
                 try {
                   setLoading(true);
-                  let { data } = await orySdk.createNativeLoginFlow({
-                    returnTo: AuthSession.makeRedirectUri({
-                      preferLocalhost: true,
-                      path: "/signin",
-                    }),
-                    returnSessionTokenExchangeCode: true,
-                  });
-
-                  let link = "";
-                  try {
-                    await orySdk.updateLoginFlow({
-                      flow: data.id,
-                      updateLoginFlowBody: {
-                        method: "oidc",
-                        provider: "google",
-                      },
-                    });
-                  } catch (error: any) {
-                    if (error?.response?.data?.redirect_browser_to) {
-                      link = error?.response?.data?.redirect_browser_to;
-                    }
-                  }
-
                   const result = await WebBrowser.openAuthSessionAsync(
                     link,
-                    AuthSession.makeRedirectUri({
-                      preferLocalhost: true,
-                      path: "/signin",
-                      scheme: "atlasmoth_caster",
-                    })
+                    redirectUri
                   );
 
                   if (result.type === "success") {
                     const code = new URL(result.url).searchParams.get("code")!;
                     const session = await orySdk.exchangeSessionToken({
-                      initCode: data.session_token_exchange_code!,
+                      initCode: flow?.session_token_exchange_code!,
                       returnToCode: code,
                     });
                     const userData = await whoAmI(session.data.session_token!);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { baseStyles } from "../utils/baseStyles";
 import {
   ActivityIndicator,
@@ -15,10 +15,40 @@ import { useAuth } from "../hooks/useAuth";
 import { BASE_URL, pollSubscription } from "../utils/api";
 import { RedirectSubscription } from "../components/Redirect";
 
-function CreatePayment({ navigation }: any) {
-  const [loading, setLoading] = useState(false);
+let redirectUri = AuthSession.makeRedirectUri({
+  preferLocalhost: true,
+  path: "CreatePayment",
+  scheme: "atlasmoth_caster",
+});
 
-  const { session, setSubscribed } = useAuth();
+function CreatePayment({ navigation }: any) {
+  const [loading, setLoading] = useState(true);
+
+  const authState = useAuth();
+  const [link, setLink] = useState("");
+
+  useEffect(() => {
+    if (authState.session?.session_token) {
+      async function getPaymentUrl() {
+        setLoading(true);
+        const res = await axios.post(
+          `${BASE_URL}/users/checkout`,
+          {
+            successUrl: redirectUri,
+            cancelUrl: redirectUri,
+          },
+          {
+            withCredentials: false,
+            headers: {
+              Authorization: `Bearer ${authState.session?.session_token}`,
+            },
+          }
+        );
+        setLink(res.data.data.url);
+      }
+      getPaymentUrl().finally(() => setLoading(false));
+    }
+  }, [authState.loading, authState.session, setLink, setLoading]);
 
   return (
     <SafeAreaView style={[baseStyles.blackBg]}>
@@ -61,37 +91,16 @@ function CreatePayment({ navigation }: any) {
                 }
                 setLoading(true);
                 try {
-                  let redirectUri = encodeURI(
-                    AuthSession.makeRedirectUri({
-                      preferLocalhost: true,
-                      path: "CreatePayment",
-                      scheme: "atlasmoth_caster",
-                    })
-                  );
-
-                  const res = await axios.post(
-                    `${BASE_URL}/users/checkout`,
-                    {
-                      successUrl: redirectUri,
-                      cancelUrl: redirectUri,
-                    },
-                    {
-                      withCredentials: false,
-                      headers: {
-                        Authorization: `Bearer ${session?.session_token}`,
-                      },
-                    }
-                  );
-
                   const result = await WebBrowser.openAuthSessionAsync(
-                    res.data.data.url,
+                    link,
                     redirectUri
                   );
                   if (result.type === "success") {
+                    const { session } = authState;
                     const hasSubscibed = await pollSubscription(
                       session?.session_token!
                     );
-                    setSubscribed(hasSubscibed);
+                    authState.setSubscribed(hasSubscibed);
                     if (hasSubscibed) {
                       navigation.replace("MediaFeed");
                     }

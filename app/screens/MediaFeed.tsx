@@ -330,7 +330,6 @@ const MediaCast = React.memo(
             {
               marginHorizontal: 16,
               marginVertical: 10,
-              width: "100%",
             },
           ]}
         >
