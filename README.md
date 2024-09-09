@@ -2,8 +2,8 @@
 
 ## Backend
 
-(Backend)[/backend/readme.md]
+[Backend](/backend/readme.md)
 
 ## App
 
-(App)[/backend/readme.md]
+[App](/backend/readme.md)
