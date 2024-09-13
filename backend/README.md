@@ -21,5 +21,5 @@ BASE_URL='BASE_URL_OF_API'
 ## Start Docker Compose
 
 ```bash
-docker compose -f dev_docker_compose.yml up -d
+docker compose -f docker_compose.yml up -d --build
 ```
